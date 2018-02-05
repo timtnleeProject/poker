@@ -36,12 +36,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //certificate
 const testId = {}
+let disableSameDevice = process.env.device;
 app.use((req, res, next) => {
-    random(7,testId).then((id) => {
-        req.session.name =id;
-        next()
-    })
-
+    if(req.session.name&&disableSameDevice){
+        console.log(req.session.name)
+        testId[req.session.name]={};
+        next();
+    } else{
+        random(7,testId).then((id) => {
+            req.session.name =id;
+            next()
+        })
+    }
 })
 app.use('/', index);
 app.use('/users', users);

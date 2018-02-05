@@ -5,6 +5,7 @@ const getId = require('./modules/random');
 const Game = require('./modules/game').Game;
 const Player = require('./modules/game').Player;
 let mode = process.env.NODE_ENV;
+let disableSameDevice = process.env.device;
 let session_middleware;
 // let rooms = {
 
@@ -23,35 +24,79 @@ let rooms = {
 let players = {};
 
 function createIo(server, session) {
-    let io = socket(server);
+    let io = socket(server, { 'close timeout': 60, 'heartbeat interval': 60 });
     session_middleware = io_session(session);
-    all(io);
+    //all(io);
     lobby(io);
     return io;
 }
 
-function all(io) {
-    io.use((socket, next) => {
-        if (mode == 'production') { //reject cross site socket connect;
-            debug(socket.handshake.headers);
-            debug(mode)
-            debug('auth')
-        }
-        next();
-    })
-    io.use(session_middleware);
-    io.use((socket, next) => { //record users//denied same connection//authorize
+// function all(io) {
+//     io.use((socket, next) => {
+//         if (mode == 'production') { //reject cross site socket connect;
+//             debug(socket.handshake.headers);
+//             debug(mode)
+//             debug('auth')
+//         }
+//         next();
+//     })
+//     io.use(session_middleware);
+//     io.use((socket, next) => { //record users//denied same connection//authorize
+//         let user = socket.handshake.session.name;
+//         if (players[user]){
+//             //debug('this player already connected')
+//             if(disableSameDevice)
+//                 socket._err='this player already connected';
+//         } else if (user === undefined) {
+//             //debug('no session')
+//             socket._err='no session';
+//             // next(new Error('no session'))
+//             return;
+//         } else {
+//             players[user]= {};           
+//             //***************************************test
+//             // players[user] = {
+//             //     atRoom: 'abcde'
+//             // }
+//             // next()
+//             //***************************************test
+//         }
+//         next()
+//     })
+//     io.on('connect', (socket) => {
+//         debug('a user connect')
+//         socket.on('error', (e) => {
+//             console.log('err')
+//         })
+//     })
+// }
+
+function lobby(io) {
+    let lobby = io.of('/lobby');
+    lobby.use(session_middleware);
+    lobby.use((socket, next) => { //record users//denied same connection//authorize
         let user = socket.handshake.session.name;
-        if (players[user])
-            debug('this player already connected')
-        if (user === undefined) {
-            debug('no session')
-            next(new Error('no session'))
+        if (players[user]) {
+            //debug('this player already connected')
+            let roomName = players[user].atRoom;
+            if (disableSameDevice) {
+                if (roomName !== undefined && rooms[roomName].status === 'waiting') {
+                    leaveRoom(user, socket, true);
+                    socket.emit('client room', 'leave')
+                } else if (roomName !== undefined && rooms[roomName].status === 'playing') {
+                    leaveGame(roomName);
+                    leaveRoom(user, socket, true)
+                    socket.emit('client room', 'leave')
+                }
+                socket._err = 'You have been connected on this device';
+            }
+        } else if (user === undefined) {
+            //debug('no session')
+            socket._err = 'no session';
+            // next(new Error('no session'))
             return;
         } else {
-            players[user]= {};           
-                 next()
-
+            players[user] = {};
             //***************************************test
             // players[user] = {
             //     atRoom: 'abcde'
@@ -59,19 +104,15 @@ function all(io) {
             // next()
             //***************************************test
         }
+        next()
     })
-    io.on('connect', (socket) => {
-        debug('a user connect')
-        socket.on('error', (e) => {
-            console.log('err')
-        })
-    })
-}
-
-function lobby(io) {
-    let lobby = io.of('/lobby');
-    lobby.use(session_middleware);
     lobby.on('connect', (socket) => {
+        console.log(players)
+        if (socket._err) {
+            debug(socket._err)
+            socket.emit('denied', socket._err)
+            return;
+        }
         let user = socket.handshake.session.name;
         //***************************************test
         // socket.join('abcde')
@@ -131,10 +172,9 @@ function lobby(io) {
                 lobby.to(id).emit('client room', 'join', theRoom);
             } else if (event === 'leave') { //in this case arg is id
                 if (players[user].atRoom !== undefined) {
-                    leaveRoom(user,socket);
+                    leaveRoom(user, socket);
                     socket.emit('client room', 'leave')
                 }
-                console.log(rooms)
             } else if (event === 'ready') { //in this case $name is {id:,name:}
                 let id = arg.id;
                 let _user = arg.name;
@@ -158,15 +198,18 @@ function lobby(io) {
                 if (allReady) { //to game
                     room.status = 'playing';
                     lobby.emit('update room', 'join', room)
-                    room.game = new Game({})
+                    room.game = new Game({
+                        maxSet: 20,
+                        maxScore: 1000
+                    })
                     for (let i in room.members) {
                         //let member = room.members[i];
-                        let p =new Player(room.members[i].name);
+                        let p = new Player(room.members[i].name);
                         //players[i].player = ;
                         p.invalid = (e) => {
                             lobby.to(players[i].id).emit('card event', 'notification', e)
                         }
-                        players[i].player=p;
+                        players[i].player = p;
                         //member.player = players[i].player;
                         room.game.join(players[i].player);
                     }
@@ -176,9 +219,9 @@ function lobby(io) {
                         room.game.licensing()
                         if (room.game.set === 0)
                             room.game.players[0].status = 'play';
-                        lobby.to(id).emit('client room', 'start game', room.game)
+                        lobby.to(id).emit('card event', 'start', room.game.players)
                     }
-                    room.game.actionReject = (p, mes) => {//to one
+                    room.game.actionReject = (p, mes) => { //to one
                         debug('gamer action reject')
                         let name = p.name;
                         let socketid = players[name].id;
@@ -187,11 +230,11 @@ function lobby(io) {
                     room.game.actionValid = function(p, c) {
                         let validate = true
                         if (this.inRound === 0) { //第一個出 缺門才能出愛心 //或是只剩愛心
-                            if (c.suit === 'heart' && !this.isVoid){
+                            if (c.suit === 'heart' && !this.isVoid) {
                                 let found = p.onhand.find((c) => {
                                     return c.suit !== 'heart';
                                 })
-                                if(found)
+                                if (found)
                                     validate = "Can't play Hearts now."
                             }
                         } else { //跟著出 缺門才能丟其他花色
@@ -208,7 +251,7 @@ function lobby(io) {
                         return validate
                     }
                     room.game.action = (p, c) => { //after ._action
-                        lobby.to(id).emit('card event', 'play', { player: p, roundPlayed: room.game.roundPlayed })
+                        lobby.to(id).emit('card event', 'play', { player: p, game: room.game })
                     }
                     room.game.roundEnd = function() { //before ._roundEnd
                         this.roundPlayed.sort(($a, $b) => {
@@ -216,7 +259,6 @@ function lobby(io) {
                             let b = $b.card;
                             let ac = (a.suit === this.roundColor) ? 1 : 0;
                             let bc = (b.suit === this.roundColor) ? 1 : 0;
-                            console.log(this.roundColor)
                             return b.index * bc - a.index * ac
                         })
 
@@ -227,12 +269,27 @@ function lobby(io) {
                                 biggest.player.ontable.push(played.card)
                         })
                         setTimeout(() => {
-                            if(biggest.player.onhand.length!==0)
+                            if (biggest.player.onhand.length !== 0)
                                 biggest.player.status = 'play';
                             lobby.to(id).emit('card event', 'round', room.game.players)
                         }, 1000)
                     }
-                    room.game.setEnd = function() {
+                    room.game.isEnd = function() {
+                        console.log(this.set)
+                        console.log(this.maxSet)
+                        console.log(this.maxScore)
+                        if (this.set === this.maxSet)
+                            return true;
+                        let player = this.players.find((p) => {
+                            console.log(p.score >= this.maxScore || p.score <= this.maxScore * -1)
+                            return p.score >= this.maxScore || p.score <= this.maxScore * -1;
+                        })
+                        if (player)
+                            return true
+                        else
+                            return false;
+                    }
+                    room.game.setEnd = function() { //before._setEnd()
                         room.game.players.forEach((player) => { //計分
                             let score = 0;
                             let score_length = 0;
@@ -286,16 +343,22 @@ function lobby(io) {
                             }
                             player.score += score;
                         })
-                        console.log(`set: ${room.game.set}`)
-                        if (!true) {
-                            // lobby.to(id).emit('card event', 'notification', `set ${this.set} end`);
-                            lobby.to(id).emit('card event', 'set',room.game.players)
-                            setTimeout(room.game.start, 2000)
+                        if (!this.isEnd()) {
+                            console.log('endddd')
+                            setTimeout(() => {
+                                lobby.to(id).emit('card event', 'notification', 'set' + (this.set + 1) + 'end');
+                            }, 2000)
+                            // lobby.to(id).emit('card event', 'set', room.game.players)
+                            setTimeout(() => {
+                                this.players.forEach((p, i) => {// in ._setEnd()?? fail
+                                    this.players[i].ontable = [];
+                                })
+                                room.game.start()
+                            }, 3000)
                         } else {
-                            setTimeout(()=>{
+                            setTimeout(() => {
                                 leaveGame(id);
-                                lobby.to(id).emit('client room', 'leave game',room)                                
-                            },1500)                           
+                            }, 2000)
                         }
                     }
                     room.game.start()
@@ -303,17 +366,25 @@ function lobby(io) {
                     //     let id = players[i].id;
                     //     lobby.to(id).emit('card event', 'start', players[i].player.onhand)
                     // }
-                    lobby.to(id).emit('card event', 'start', room.game.players)
+                    lobby.to(id).emit('client room', 'start game', room.game)
                 }
             }
         })
         //----------------------GAME-------------------
         socket.on('action', (c) => {
+            if (players[user] === undefined) {
+                socket.emit('reject', '請重新整理')
+                return
+            }
             let player = players[user].player;
             player.action(c);
         })
         //---------------------------------------------
         socket.on('chat', (mes) => {
+            if (players[user] === undefined) {
+                socket.emit('reject', '請重新整理')
+                return
+            }
             let room = players[user].atRoom;
             lobby.to(room).emit('chat', {
                 name: user,
@@ -321,45 +392,51 @@ function lobby(io) {
             })
         })
         socket.on('disconnect', () => {
+            debug(`${user} disconnected`)
             if (players[user] === undefined)
                 return;
-            if (players[user].atRoom !== undefined) {
-                leaveRoom(user)
+            if (players[user].atRoom !== undefined) { //at room
+                let roomId = players[user].atRoom;
+                if (rooms[roomId].status === 'playing') //at game
+                    leaveGame(roomId)
+                leaveRoom(user, false, true)
             } else if (players[user].atRoom === undefined) { // at lobby
                 delete players[user]
             }
         })
     })
 
-    function leaveRoom(user,socket) {
+    function leaveRoom(user, socket, disconnect) {
         let roomId = players[user].atRoom;
         let theRoom = rooms[roomId];
         delete theRoom.members[user];
         if (Object.keys(theRoom.members).length === 0) { //房間沒人
             delete rooms[roomId]
             lobby.emit('update room', 'delete', theRoom)
-        } else {//房間有人
+        } else { //房間有人
             lobby.to(roomId).emit('client room', 'others leave', theRoom)
             lobby.emit('update room', 'leave', theRoom)
         }
-        if(socket)
+        if (socket)
             socket.leave(roomId)
-        players[user] = {};
+        if (disconnect)
+            delete players[user]
+        else
+            players[user] = {};
     }
 
-    function leaveGame(roomName){
+    function leaveGame(roomName) {
         let theRoom = rooms[roomName];
-        if(theRoom&&theRoom.game){
-            for(let i in theRoom.members){
-                let user=theRoom.members[i]
+        if (theRoom && theRoom.game) {
+            for (let i in theRoom.members) {
+                let user = theRoom.members[i]
                 user.status = false;
                 delete players[user.name].player;
             }
             delete rooms[roomName].game
-            theRoom.status='wait';
-        }        
-        console.log(rooms)
-        console.log(players)
+            theRoom.status = 'waiting';
+            lobby.to(roomName).emit('client room', 'leave game', theRoom)
+        }
     }
 }
 

@@ -1,5 +1,5 @@
 const debug = require('debug')('poker:game');
-const cardNum = 4;
+const cardNum = 52;
 
 function Deck() {
     this.cards = [];
@@ -121,7 +121,7 @@ function Player(name) {
     this.name = name;
     this.onhand = [];
     this.ontable = [];
-    this.score=0;
+    this.score = 0;
     this.status = 'wait';
 }
 Player.prototype.action = function($c) {
@@ -196,7 +196,7 @@ function Game(arg) {
     this.inRound = 0;
     this.roundColor = '';
     this.roundPlayed = [];
-    this.maxSet = arg.maxSet||false;
+    this.maxSet = arg.maxSet || false;
     this.maxScore = arg.maxScore || false;
     //-----
     this.start = () => {}
@@ -238,15 +238,7 @@ Game.prototype.init = function() {
                 if (this.inRound === 4) {
                     this.roundEnd()
                     this._roundEnd()
-                    if (p.onhand.length === 0) {
-                        this.setEnd();
-                        this._setEnd();
-                    } else {
-                        //this.findNext(p).status = 'play';
-                    }
-                } else {
-                    this.findNext(p).status = 'play';
-                }
+                } 
             } else {
                 debug(validate)
                 if (this.actionReject)
@@ -286,6 +278,16 @@ Game.prototype._action = function(p, card) {
     if (this.inRound === 0)
         this.roundColor = card.suit;
     this.inRound++;
+    if (this.inRound === 4) {
+        if (p.onhand.length === 0) {
+            this.setEnd();
+            this._setEnd();
+        } else {
+            //this.findNext(p).status = 'play';
+        }
+    } else {
+        this.findNext(p).status = 'play';
+    }
 }
 Game.prototype._roundEnd = function() {
     this.round++;
@@ -293,7 +295,7 @@ Game.prototype._roundEnd = function() {
     this.roundPlayed = [];
 }
 Game.prototype._setEnd = function() {
-	this.round=0;
+    this.round = 0;
     this.set++;
 }
 Game.prototype._invalid = function(e) {

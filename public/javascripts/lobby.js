@@ -3,9 +3,13 @@ var socket = io('/lobby');
 socket.on('message', function(mes) {
     console.log(`lobby: ${mes}`)
 })
-socket.on('init room', (rs, user) => {
+socket.on('init room', function(rs, user) {
     app.rooms = rs;
     app.user = user;
+})
+socket.on('denied', function(mes) {
+    Vue.set(app.denied, 'show', true);
+    Vue.set(app.denied, 'message', mes);
 })
 socket.on('update room', function(event, room) { //lobby
     switch (event) {
@@ -48,20 +52,16 @@ socket.on('client room', function(event, arg) {
                 app.ready = !app.ready
             break;
         case 'start game':
-            if(app.content!=='game')
+            if (app.content !== 'game')
                 app.content = 'game';
-            //app.players = arg;
             app.Game = arg;
-            //app.sets+=1;
             break;
         case 'leave game':
-            if(app.content!=='room')
+            if (app.content !== 'room')
                 app.content = 'room';
-            app.ready=false;
+            app.ready = false;
             app.atRoom = arg;
             app.Game = {};
-            //app.players = [];
-            //app.sets=0;
             break;
     }
 })
@@ -78,35 +78,44 @@ socket.on('reject', function(e) {
 socket.on('card event', function(name, arg) {
     switch (name) {
         case 'start':
-            Vue.set(app.Game,'players',arg);
+            Vue.set(app.Game, 'players', arg);
             break;
         case 'play':
             app.Game.players.find(function(p, i) {
                 if (p.index === arg.player.index)
                     Vue.set(app.Game.players, i, arg.player)
             })
-            Vue.set(app.Game,'roundPlayed',arg.roundPlayed)
-            // app.roundPlayed = arg.roundPlayed;
+            Vue.set(app.Game,'players',arg.game.players)
+            Vue.set(app.Game, 'roundPlayed', arg.game.roundPlayed)
             break;
         case 'round':
-            Vue.set(app.Game,'roundPlayed',[])
-            Vue.set(app.Game,'players',arg);
-            //app.roundPlayed = []
-            //app.players = arg;
+            Vue.set(app.Game, 'roundPlayed', [])
+            Vue.set(app.Game, 'players', arg);
             break;
         case 'set':
-            Vue.set(app.Game,'players',arg);
-            //app.players = arg;
+            Vue.set(app.Game, 'players', arg);
             break;
         case 'notification':
             app.notification = arg
-            alert(arg)
+            notificate()
             break;
     }
 })
 socket.on('invalid', function(e) {
     alert(e)
 })
+
+function notificate()  {
+    let el = document.getElementById('notification');
+    if (el === null)
+        return;
+    if (el.classList.contains('fade')) {
+        el.classList.remove('fade');
+        setTimeout(function(){el.classList.add('fade')},0)
+    } else {
+        el.classList.add('fade');
+    }
+}
 //---------Vue--View-----------
 var app = new Vue({
     el: '#app',
@@ -114,12 +123,16 @@ var app = new Vue({
         place: 'lobby',
         user: null,
         rooms: {},
+        denied: {
+            show: false,
+            message: ''
+        },
         roomName: '',
-        roomSetting : {
-            name:'',
-            maxSets:10,
-            maxScore:1000,
-            show:false
+        roomSetting: {
+            name: '',
+            maxSets: 10,
+            maxScore: 1000,
+            show: false
         },
         //atRoom: {},
         //***************test
@@ -136,10 +149,7 @@ var app = new Vue({
         messages: [],
         chatMessage: '',
         //-------GAME-----------------------
-        Game:{},
-        players: [],
-        roundPlayed: [],
-        sets:0,
+        Game: {},
         notification: ''
     },
     methods: {
@@ -199,13 +209,25 @@ var app = new Vue({
         },
         roundPlayed_game: function() {
             let point;
-            this.members_game.forEach((m,i)=>{
-                this.roundPlayed.forEach((played)=>{
-                    if(m.index===played.player.index)
-                        played.index=i;
-                })                
+            this.members_game.forEach((m, i) => {
+                this.Game.roundPlayed.forEach((played) => {
+                    if (m.index === played.player.index)
+                        played.index = i;
+                })
             })
-            return this.roundPlayed
+            return this.Game.roundPlayed
+        },
+        activePlayer:function(){
+            let active;
+            if(this.Game.players){
+                active=this.Game.players.find(function(p){
+                    return p.status==='play';
+                })
+            }
+            if(active)
+                return active
+            else
+                return '---'
         },
         scroll: function() {
             let fake = this.messages;

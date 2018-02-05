@@ -40,5 +40,22 @@ button:focus{
 button:hover{
 	background-color: rgba(200,200,200,0.2)
 }
-
+/*----------------class style---------------*/
+.ab{
+	position: absolute;
+}
+.re{
+	position: relative;
+} 
+.v-center{
+	top:50%;
+	-webkit-transform: translateY(-50%);
+	        transform: translateY(-50%);
+}
+.h-center{
+	text-align: center;
+	left: 50%;
+	-webkit-transform: translateX(-50%);
+	        transform: translateX(-50%);
+}
 /*# sourceMappingURL=style.css.map */

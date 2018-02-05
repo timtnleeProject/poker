@@ -4,14 +4,33 @@
 	padding: 5px;
 	margin: 5px 0px 5px 0px;
 }
+/*----------------lobby------------------*/
 .rooms:hover{
 	background-color: rgba(220,220,220,0.6);
 }
-.chat{
+#denied{
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top:0;
+	left: 0;
+	background-color: rgba(200,200,200,0.8);
+}
+/*----------------chat------------------*/
+.chat-pos{
+	width: 360px;
+	pointer-events: none;
+	position: fixed;
+	bottom: 5px;
+	left: 5px;
+}
+.chat{	
+	background-color: rgba(33,149,128,0.2);	
+	pointer-events: none;
 	-webkit-box-sizing: border-box;
 	        box-sizing: border-box;
-	width: 300px;
-	height: 150px;
+	width: 100%;
+	height: 200px;
 	border: 1px solid brown;
 	overflow-y: scroll;
 	overflow-x: hidden;
@@ -24,7 +43,8 @@
 	padding: 1px;
 }
 .chat-input{
-	width: 300px;
+	pointer-events: auto;
+	width: 100%;
 	display: -webkit-box;
 	display: -ms-flexbox;
 	display: flex;
@@ -54,8 +74,9 @@ button.ready{
 	color: black;
 }
 .note{
-	color: lightgray;
+	color: white;
 	text-align: center;
+	text-shadow: 0px 0px 1px gray;
 }
 .blue{
 	color: blue;
@@ -66,4 +87,168 @@ button.ready{
 .gray{
 	color: gray;
 }
+
+/*----------------game------------------*/
+:root{
+  --myWidth:5%;
+}
+.table{
+	background-color: #008844;
+	width: 100%;
+	border: 1px solid black;
+	height: 65vh;
+	position: relative;
+}
+.table .played{
+	position: absolute;
+	width: var(--myWidth);
+}.table .played img{
+	width: 100%;
+}
+.table .played-0{
+	top: calc(50% + var(--myWidth));
+	left:50%;
+	-webkit-transform: translateX(-50%);
+	        transform: translateX(-50%);
+}
+.table .played-1{	
+	left: calc(50% + var(--myWidth));
+	top:50%;
+	-webkit-transform: translateY(-50%);
+	        transform: translateY(-50%);
+}
+.table .played-2{
+	bottom: calc(50% + var(--myWidth));
+	left:50%;
+	-webkit-transform: translateX(-50%);
+	        transform: translateX(-50%);
+}
+.table .played-3{
+	right: calc(50% + var(--myWidth));
+	top:50%;
+	-webkit-transform: translateY(-50%);
+	        transform: translateY(-50%);
+}
+.ontable{
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-pack: center;
+	    -ms-flex-pack: center;
+	        justify-content: center;
+	position: absolute;
+}
+.ontable-0{
+	-ms-flex-wrap: wrap-reverse;
+	    flex-wrap: wrap-reverse;
+	bottom: 5px;
+	width: 100%;
+}.ontable-0>.card{
+	width: var(--myWidth);
+}.ontable-0>.card>img{
+	width: 100%;
+}
+.ontable-1{
+	-ms-flex-wrap: wrap-reverse;
+	    flex-wrap: wrap-reverse;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	    -ms-flex-direction: column;
+	        flex-direction: column;
+	right: 5px;
+	height: 100%;
+	width: var(--myWidth);
+}
+.ontable-1>.card{
+	margin:0;
+	-ms-flex-negative: 0;
+	    flex-shrink: 0; 
+	width: 100%;
+}.ontable-1>.card>img{
+	width: 100%;
+}
+.ontable-2{
+	-ms-flex-wrap: wrap;
+	    flex-wrap: wrap;
+	top:5px;
+	width: 100%;
+}.ontable-2>.card{
+	width: var(--myWidth);
+}.ontable-2>.card>img{
+	width: 100%;
+}
+.ontable-3{
+	-ms-flex-wrap: wrap;
+	    flex-wrap: wrap;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	    -ms-flex-direction: column;
+	        flex-direction: column;
+	left: 5px;
+	height: 100%;
+	width: var(--myWidth);
+}
+.ontable-3>.card{
+	width: 100%;
+}.ontable-3>.card>img{
+	width: 100%;
+}
+.onhand{
+	width: 100%;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-pack: center;
+	    -ms-flex-pack: center;
+	        justify-content: center;
+}.onhand .card{
+	-webkit-transform: translateY(0);
+	        transform: translateY(0);
+	margin-left: -5px;
+	width: var(--myWidth);
+	padding: 0;
+	cursor: pointer;
+}.onhand .card:hover{	
+	-webkit-transform: translateY(-10%);	
+	        transform: translateY(-10%);
+}.onhand .card img{
+	width: 100%;
+}
+#board{
+	text-align: center;
+	position: fixed;
+	top:5px;
+	right: 5px;
+	width: 300px;
+	height: 150px;
+	background-color: rgba(255,255,255,0.6);
+	border: 1px solid gray;
+}#board table{
+	width: 100%;
+}
+#notification{
+	top:30vh;
+	opacity: 0;
+	position: fixed;
+	pointer-events: none;
+	width: 100%;
+	background-color: rgba(175,175,175,0.3);
+	padding: 20px;
+}
+#notification.fade{
+	-webkit-animation: fade 1.5s;
+	        animation: fade 1.5s;
+}
+@-webkit-keyframes fade {
+    0% {opacity: 0;}
+    50% {opacity: 1;}
+    100% {opacity: 0;}
+}
+@keyframes fade {
+    0% {opacity: 0;}
+    50% {opacity: 1;}
+    100% {opacity: 0;}
+}
+
+/*----------------------------------*/
 /*# sourceMappingURL=lobby.css.map */
