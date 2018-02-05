@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include parts/head %>
+    	<link rel="stylesheet" type="text/css" href="/stylesheets/dist/lobby.css">
+        <script src="/javascripts/lobby.js" defer></script>
+</head>
+<body>	
+	<% include parts/header %>
+    <div id="app" class="content">
+        <p>user: {{user}}</p>
+        <template v-if="content==='lobby'">
+            <h1>LOBBY</h1>
+            <form>
+                <input id="roomName" type="text" name="roomName" v-model:value="roomName" placeholder="room name">
+                <input v-on:click="createRoom($event)" type="submit" value="Create Room">
+            </form>
+            <div class="rooms" v-for="(item, key, index) in rooms" v-on:click="enter(rooms[key].id)">
+                <p>name:{{rooms[key].name}}</p>
+                <p>ID:{{rooms[key].id}}</p>
+                <p>host:{{rooms[key].host}}</p>
+                <p>member:{{members_lob[index]}}</p>
+                <p>status:{{rooms[key].status}}</p>
+            </div>
+            <div id="setRoom" v-if="roomSetting.show">
+            	<input type="text" name="">
+            	<input type= "number" value="1000" min="500" max="2000" step="500">
+            	<input type= "number">
+            	<input v-on:click="createRoom($event)" type="submit" value="Create Room">
+            </div>
+        </template>
+        <template v-else-if="content==='room'">
+            <button v-on:click="leaveRoom()">Leave Room</button>
+            <div>You are now in : {{atRoom.name}}</div>
+            <p>待所有人準備遊戲即開始</p>
+            <button v-on:click="getReady" v-bind:class={ready:ready,waiting:!ready}>Ready:{{ready}}</button>
+            <div>
+                <span v-for="m in atRoom.members">{{m}} / </span>
+            </div>
+        </template>
+        <template v-else-if="content==='game'">
+            <div>You are now in : {{atRoom.name}}</div>
+            <p>GAME</p>
+            <div v-for="(played,index) in roundPlayed_game">
+                <div class="card" v-bind:class="'played-'+played.index">
+                    <p>{{played.card.suit}}</p>
+                    <p>{{played.card.value}}</p>
+                </div>
+            </div>
+            <div v-for="p in members_game">
+                <div class="card" v-for="card in p.ontable">
+                    <p>{{card.suit}}</p>
+                    <p>{{card.value}}</p>
+                </div>
+            </div>
+            <div v-for="p in members_game">
+                {{p.name}}:{{p.onhand.length}}張牌
+                <br>
+            </div>
+            <div class='card' v-for="card in members_game[0].onhand" v-on:click='action(card)'>
+                <p>{{card.suit}}</p>
+                <p>{{card.value}}</p>
+            </div>
+            <div id="board">
+            	<p>分數</p>
+            	<small>第{{sets}}局</small>
+            	<p v-for="p in members_game">{{p.name}} : {{p.score}}</p>
+            </div>
+            <div id="notification">{{notification}}</div>
+        </template>
+        <template v-if="content==='room'||content==='game'">
+            <div class="chat" v-bind:myEvent="scroll">
+                <header>Chat</header>
+                <span class="message" v-for="mes in messages" v-bind:class="mes.style">{{mes.name}} : {{mes.mes}}</span>
+            </div>
+            <form class="chat-input">
+                <input type="text" name="chatMessage" v-model:value="chatMessage">
+                <input type="submit" value="submit" v-on:click="sendMes($event)">
+            </form>
+        </template>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,59 @@
+.rooms{
+	cursor: pointer;
+	border: 1px solid gray;
+	padding: 5px;
+	margin: 5px 0px 5px 0px;
+}
+.rooms:hover{
+	background-color: rgba(220,220,220,0.6);
+}
+.chat{
+	box-sizing: border-box;
+	width: 300px;
+	height: 150px;
+	border: 1px solid brown;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	margin-bottom: 5px; 
+}.chat>span{
+	display: block;
+	word-break: break-all;
+}.chat>header{
+	text-align: center;
+	padding: 1px;
+}
+.chat-input{
+	width: 300px;
+	display: flex;
+	justify-content: space-around;
+}.chat-input>[name="chatMessage"]{
+	flex-grow: 8;
+	margin-right: 2px;
+	box-sizing: border-box;
+}.chat-input>[type="submit"]{
+	flex-grow: 2;
+}
+button.waiting{
+	border-color: red;
+	color: red;
+}
+button.ready{
+	border-color: green;
+	color: green;
+}
+.black{
+	color: black;
+}
+.note{
+	color: lightgray;
+	text-align: center;
+}
+.blue{
+	color: blue;
+}
+.red{
+	color: red;
+}
+.gray{
+	color: gray;
+}
