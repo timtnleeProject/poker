@@ -5,7 +5,8 @@ socket.on('message', function(mes) {
 })
 socket.on('init room', function(rs, user) {
     app.rooms = rs;
-    app.user = user;
+    app.userId = user.id;
+    app.userName = user.name;
 })
 socket.on('denied', function(mes) {
     Vue.set(app.denied, 'show', true);
@@ -47,8 +48,8 @@ socket.on('client room', function(event, arg) {
             app.ready = false;
             break;
         case 'status':
-            Vue.set(app.atRoom.members, arg.name, arg);
-            if (arg.name == app.user)
+            Vue.set(app.atRoom.members, arg.id, arg);
+            if (arg.id == app.userId)
                 app.ready = !app.ready
             break;
         case 'start game':
@@ -78,14 +79,14 @@ socket.on('reject', function(e) {
 socket.on('card event', function(name, arg) {
     switch (name) {
         case 'start':
-            Vue.set(app.Game, 'players', arg);
+            app.Game=arg;
             break;
         case 'play':
             app.Game.players.find(function(p, i) {
                 if (p.index === arg.player.index)
                     Vue.set(app.Game.players, i, arg.player)
             })
-            Vue.set(app.Game,'players',arg.game.players)
+            Vue.set(app.Game, 'players', arg.game.players)
             Vue.set(app.Game, 'roundPlayed', arg.game.roundPlayed)
             break;
         case 'round':
@@ -96,8 +97,7 @@ socket.on('card event', function(name, arg) {
             Vue.set(app.Game, 'players', arg);
             break;
         case 'notification':
-            app.notification = arg
-            notificate()
+            notificate(arg)
             break;
     }
 })
@@ -105,23 +105,23 @@ socket.on('invalid', function(e) {
     alert(e)
 })
 
-function notificate()  {
+function notificate(mes) {
+    app.notification = mes;
     let el = document.getElementById('notification');
     if (el === null)
         return;
-    if (el.classList.contains('fade')) {
-        el.classList.remove('fade');
-        setTimeout(function(){el.classList.add('fade')},0)
-    } else {
-        el.classList.add('fade');
-    }
+    if (!el.classList.contains('show')) {
+        el.classList.add('show');
+        setTimeout(function() { el.classList.remove('show') }, 1000)
+    }        
 }
 //---------Vue--View-----------
 var app = new Vue({
     el: '#app',
     data: {
         place: 'lobby',
-        user: null,
+        userId: false,
+        userName: false,
         rooms: {},
         denied: {
             show: false,
@@ -178,11 +178,14 @@ var app = new Vue({
             this.chatMessage = '';
         },
         getReady: function() {
-            var arg = { id: this.atRoom.id, name: this.user, ready: !this.ready }
+            var arg = { id: this.atRoom.id, name: this.userId, ready: !this.ready }
             socket.emit('room event', 'ready', arg);
         }, //--------------GAME
         action: function(card) {
-            socket.emit('action', card)
+            if(this.members_game[0].status==='play')
+                socket.emit('action', card)
+            else
+                notificate('Not your turn')
         }
     },
     computed: {
@@ -200,7 +203,7 @@ var app = new Vue({
             let point;
             let ary = this.Game.players;
             ary.forEach((p, i) => {
-                if (p.name === this.user)
+                if (p.id === this.userId)
                     point = i;
             })
             let f = ary.slice(0, point)
@@ -217,14 +220,14 @@ var app = new Vue({
             })
             return this.Game.roundPlayed
         },
-        activePlayer:function(){
+        activePlayer: function() {
             let active;
-            if(this.Game.players){
-                active=this.Game.players.find(function(p){
-                    return p.status==='play';
+            if (this.Game.players) {
+                active = this.Game.players.find(function(p) {
+                    return p.status === 'play';
                 })
             }
-            if(active)
+            if (active)
                 return active
             else
                 return '---'

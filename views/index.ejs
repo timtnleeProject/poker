@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <% include parts/head %>
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-    <a href="/lobby">Go to Lobby</a>
-  </body>
+</head>
+
+<body>
+    <div id="app">
+        <% include parts/header %>
+        <div class="content">
+        	<h1><%= title %></h1>
+            <p>Welcome to
+                <%= title %>
+            </p>
+            <a href="/lobby">Start</a>
+        </div>           
+    </div>
+</body>
+
 </html>

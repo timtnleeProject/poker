@@ -350,7 +350,7 @@ let playeds = []
 for (var i = 0; i < 4; i++) {
     let p = new Player('p'+i)
     playeds.push({card:new Card(i),player:p});
-    p.ontable.push(new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23))
+    p.ontable.push(new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23),new Card(10),new Card(23))
     ps.push(p)
 }
 let g = new Game({players:ps})

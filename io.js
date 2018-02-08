@@ -4,6 +4,7 @@ const debug = require('debug')('poker:io');
 const getId = require('./modules/random');
 const Game = require('./modules/game').Game;
 const Player = require('./modules/game').Player;
+const record = require('./modules/record')
 let mode = process.env.NODE_ENV;
 let disableSameDevice = process.env.device;
 let session_middleware;
@@ -21,10 +22,10 @@ let rooms = {
     // }
 }
 //***************************************test
-let players = {};
+let players = record.sessionId;
 
 function createIo(server, session) {
-    let io = socket(server, { 'close timeout': 60, 'heartbeat interval': 60 });
+    let io = socket(server);
     session_middleware = io_session(session);
     //all(io);
     lobby(io);
@@ -75,11 +76,12 @@ function lobby(io) {
     let lobby = io.of('/lobby');
     lobby.use(session_middleware);
     lobby.use((socket, next) => { //record users//denied same connection//authorize
-        let user = socket.handshake.session.name;
+        let user = socket.handshake.session.userId;
+        let name = socket.handshake.session.userName;
         if (players[user]) {
-            //debug('this player already connected')
+            debug('this player already connected')
             let roomName = players[user].atRoom;
-            if (disableSameDevice) {
+            if (disableSameDevice == 'yes') {
                 if (roomName !== undefined && rooms[roomName].status === 'waiting') {
                     leaveRoom(user, socket, true);
                     socket.emit('client room', 'leave')
@@ -96,7 +98,9 @@ function lobby(io) {
             // next(new Error('no session'))
             return;
         } else {
-            players[user] = {};
+            players[user] = {
+                name: name
+            };
             //***************************************test
             // players[user] = {
             //     atRoom: 'abcde'
@@ -107,13 +111,13 @@ function lobby(io) {
         next()
     })
     lobby.on('connect', (socket) => {
-        console.log(players)
         if (socket._err) {
             debug(socket._err)
             socket.emit('denied', socket._err)
             return;
         }
-        let user = socket.handshake.session.name;
+        let user = socket.handshake.session.userId; //user:  Id
+        let userName = socket.handshake.session.userName;//userName: name
         //***************************************test
         // socket.join('abcde')
         // rooms.abcde.members[user] = {
@@ -123,7 +127,7 @@ function lobby(io) {
         // lobby.to('abcde').emit('client room', 'join', rooms.abcde)
         // console.log(rooms)
         //***************************************test
-        socket.emit('init room', rooms, user);
+        socket.emit('init room', rooms, {id:user,name:userName});
         socket.on('room event', (event, arg) => { //arg
             if (players[user] === undefined) {
                 socket.emit('reject', '請重新整理')
@@ -140,7 +144,8 @@ function lobby(io) {
                         status: 'waiting'
                     };
                     newRoom.members[user] = { // new member
-                        name: user,
+                        id: user,
+                        name: userName,
                         status: false
                     }
                     //紀錄
@@ -162,7 +167,8 @@ function lobby(io) {
                 }
                 //紀錄
                 theRoom.members[user] = { // new member
-                    name: user,
+                    id: user,
+                    name: userName,
                     status: false
                 };
                 players[user].atRoom = id;
@@ -175,7 +181,7 @@ function lobby(io) {
                     leaveRoom(user, socket);
                     socket.emit('client room', 'leave')
                 }
-            } else if (event === 'ready') { //in this case $name is {id:,name:}
+            } else if (event === 'ready') { //in this case .name is userName .id is RoomId
                 let id = arg.id;
                 let _user = arg.name;
                 let room = rooms[id];
@@ -204,7 +210,7 @@ function lobby(io) {
                     })
                     for (let i in room.members) {
                         //let member = room.members[i];
-                        let p = new Player(room.members[i].name);
+                        let p = new Player({name:room.members[i].name,id:room.members[i].id});
                         //players[i].player = ;
                         p.invalid = (e) => {
                             lobby.to(players[i].id).emit('card event', 'notification', e)
@@ -219,12 +225,12 @@ function lobby(io) {
                         room.game.licensing()
                         if (room.game.set === 0)
                             room.game.players[0].status = 'play';
-                        lobby.to(id).emit('card event', 'start', room.game.players)
+                        lobby.to(id).emit('card event', 'start', room.game)
                     }
                     room.game.actionReject = (p, mes) => { //to one
                         debug('gamer action reject')
-                        let name = p.name;
-                        let socketid = players[name].id;
+                        let pid = p.id;
+                        let socketid = players[pid].id;
                         lobby.to(socketid).emit('card event', 'notification', mes)
                     }
                     room.game.actionValid = function(p, c) {
@@ -244,7 +250,7 @@ function lobby(io) {
                                 })
                                 if (found)
                                     validate = "You Still have " + this.roundColor;
-                                else if (!this.isVoid)
+                                else if (c.suit==='heart'&&!this.isVoid)
                                     this.isVoid = true;
                             }
                         }
@@ -253,35 +259,35 @@ function lobby(io) {
                     room.game.action = (p, c) => { //after ._action
                         lobby.to(id).emit('card event', 'play', { player: p, game: room.game })
                     }
+                    room.game.roundDelay = 1800;
                     room.game.roundEnd = function() { //before ._roundEnd
-                        this.roundPlayed.sort(($a, $b) => {
-                            let a = $a.card;
-                            let b = $b.card;
-                            let ac = (a.suit === this.roundColor) ? 1 : 0;
-                            let bc = (b.suit === this.roundColor) ? 1 : 0;
-                            return b.index * bc - a.index * ac
-                        })
+                        return new Promise((resolve, reject) => {
+                            this.roundPlayed.sort(($a, $b) => {
+                                let a = $a.card;
+                                let b = $b.card;
+                                let ac = (a.suit === this.roundColor) ? 1 : 0;
+                                let bc = (b.suit === this.roundColor) ? 1 : 0;
+                                return b.index * bc - a.index * ac
+                            })
 
-                        let biggest = this.roundPlayed[0];
-                        lobby.to(id).emit('card event', 'notification', biggest.player.name + ' eats this round');
-                        this.roundPlayed.forEach((played) => {
-                            if (played.card.role !== 'normal')
-                                biggest.player.ontable.push(played.card)
+                            let biggest = this.roundPlayed[0];
+                            lobby.to(id).emit('card event', 'notification', biggest.player.name + ' eats this round');
+                            this.roundPlayed.forEach((played) => {
+                                if (played.card.role !== 'normal')
+                                    biggest.player.ontable.push(played.card)
+                            })
+                            setTimeout(() => {
+                                if (biggest.player.onhand.length !== 0)
+                                    biggest.player.status = 'play';
+                                lobby.to(id).emit('card event', 'round', room.game.players)
+                                resolve()
+                            }, room.game.roundDelay)
                         })
-                        setTimeout(() => {
-                            if (biggest.player.onhand.length !== 0)
-                                biggest.player.status = 'play';
-                            lobby.to(id).emit('card event', 'round', room.game.players)
-                        }, 1000)
                     }
                     room.game.isEnd = function() {
-                        console.log(this.set)
-                        console.log(this.maxSet)
-                        console.log(this.maxScore)
                         if (this.set === this.maxSet)
                             return true;
                         let player = this.players.find((p) => {
-                            console.log(p.score >= this.maxScore || p.score <= this.maxScore * -1)
                             return p.score >= this.maxScore || p.score <= this.maxScore * -1;
                         })
                         if (player)
@@ -289,76 +295,19 @@ function lobby(io) {
                         else
                             return false;
                     }
-                    room.game.setEnd = function() { //before._setEnd()
-                        room.game.players.forEach((player) => { //計分
-                            let score = 0;
-                            let score_length = 0;
-                            let mult = 1;
-                            let pig = 0;
-                            let sheet = 0;
-                            player.ontable.forEach((card) => {
-                                if (card.role === 'score') {
-                                    score_length++;
-                                    switch (card.value) {
-                                        case 'A':
-                                            score -= 50
-                                            break;
-                                        case 'K':
-                                            score -= 40
-                                            break;
-                                        case 'Q':
-                                            score -= 30
-                                            break;
-                                        case 'J':
-                                            score -= 20
-                                            break;
-                                        case '4':
-                                            score -= 10
-                                            break;
-                                        default:
-                                            score -= parseInt(card.value)
-                                            break;
-                                    }
-                                } else if (card.role === 'pig') {
-                                    player.status = 'play';
-                                    pig = -100
-                                } else if (card.role === 'sheet') {
-                                    sheet = 100;
-                                } else if (card.role === 'double') {
-                                    mult = 2;
-                                }
-                            })
-                            if ((score_length === 13 && mult === 2) && (pig && sheet)) { //全吃 1000分
-                                score = 1000;
-                            } else {
-                                if (score_length === 13) { //全吃紅心 豬羊變色 紅心正分
-                                    score *= -1;
-                                    pig *= -1
-                                    sheet *= -1;
-                                }
-                                if (score_length === 0 && mult === 2) { //只吃梅花10=>50分
-                                    score = 25;
-                                }
-                                score = (score + pig + sheet) * mult;
-                            }
-                            player.score += score;
-                        })
+                    room.game.setDelay = 3000;
+                    room.game.setEnd = function() { //after._setEnd()
                         if (!this.isEnd()) {
-                            console.log('endddd')
+                            debug('set end')                            
                             setTimeout(() => {
-                                lobby.to(id).emit('card event', 'notification', 'set' + (this.set + 1) + 'end');
-                            }, 2000)
-                            // lobby.to(id).emit('card event', 'set', room.game.players)
-                            setTimeout(() => {
-                                this.players.forEach((p, i) => {// in ._setEnd()?? fail
-                                    this.players[i].ontable = [];
-                                })
+                                lobby.to(id).emit('card event', 'notification', 'set' + (this.set + 1) + ' start');
                                 room.game.start()
-                            }, 3000)
+                            }, room.game.setDelay)
+                            // lobby.to(id).emit('card event', 'set', room.game.players)
                         } else {
                             setTimeout(() => {
                                 leaveGame(id);
-                            }, 2000)
+                            }, 5000)
                         }
                     }
                     room.game.start()
@@ -397,8 +346,10 @@ function lobby(io) {
                 return;
             if (players[user].atRoom !== undefined) { //at room
                 let roomId = players[user].atRoom;
-                if (rooms[roomId].status === 'playing') //at game
-                    leaveGame(roomId)
+                if (rooms[roomId].status === 'playing'){//at game
+                    lobby.to(roomId).emit('card event','notification', user+' quits this game.')
+                    setTimeout(()=>{leaveGame(roomId)},2000)
+                } 
                 leaveRoom(user, false, true)
             } else if (players[user].atRoom === undefined) { // at lobby
                 delete players[user]
@@ -412,14 +363,14 @@ function lobby(io) {
         delete theRoom.members[user];
         if (Object.keys(theRoom.members).length === 0) { //房間沒人
             delete rooms[roomId]
-            lobby.emit('update room', 'delete', theRoom)
+            lobby.emit('update room', 'delete', theRoom)//update room 是大廳的event /所有人
         } else { //房間有人
             lobby.to(roomId).emit('client room', 'others leave', theRoom)
             lobby.emit('update room', 'leave', theRoom)
         }
         if (socket)
             socket.leave(roomId)
-        if (disconnect)
+        if (disconnect && disableSameDevice)
             delete players[user]
         else
             players[user] = {};
@@ -431,7 +382,7 @@ function lobby(io) {
             for (let i in theRoom.members) {
                 let user = theRoom.members[i]
                 user.status = false;
-                delete players[user.name].player;
+                delete players[user.id].player;
             }
             delete rooms[roomName].game
             theRoom.status = 'waiting';

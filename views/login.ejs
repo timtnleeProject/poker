@@ -1,13 +1,23 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <% include parts/head %>
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <form>
-    	<input type="text" name="">
-    	<input type="password" name="" value="">
-    </form>
-  </body>
+      <script src="/javascripts/login.js" defer></script>
+</head>
+
+<body>
+    <div id="app">
+        <% include parts/header %>
+            <div class="content">
+                <form id="form">
+                    <label>Pick a name :</label>
+                    <input type="text" name="name" v-model="name">
+                    <span>{{invalid}}</span>
+                    <button id="button">submit</button>
+                </form>
+            </div>
+    </div>
+</body>
+
 </html>

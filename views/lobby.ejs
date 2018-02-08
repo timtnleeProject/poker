@@ -8,10 +8,10 @@
 </head>
 
 <body>
-    <% include parts/header %>
-        <div id="app" class="content">
-            <p>user: {{user}}</p>
+    <div id="app">
+            <% include parts/header %>
             <template v-if="content==='lobby'">
+                <div class="content">
                 <h1>LOBBY</h1>
                 <form>
                     <input id="roomName" type="text" name="roomName" v-model:value="roomName" placeholder="room name">
@@ -32,6 +32,7 @@
                 </div>
                 <div v-if="denied.show" id="denied">
                     <div class="re v-center h-center">{{denied.message}}</div>
+                </div>
                 </div>
             </template>
             <template v-else-if="content==='room'">
@@ -70,8 +71,11 @@
                     <small>第{{Game.set +1}}局</small>
                     <p>輪到 {{activePlayer.name}} 出牌</p>
                     <table>
-                        <tr v-for="p in members_game"><td>{{p.name}}</td><td>: {{p.score}}</td></tr>
-                    </table>                    
+                        <tr v-for="p in members_game">
+                            <td>{{p.name}}</td>
+                            <td>: {{p.score}}</td>
+                        </tr>
+                    </table>
                 </div>
                 <div id="notification" class="v-center h-center">{{notification}}</div>
             </template>

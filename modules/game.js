@@ -117,8 +117,9 @@ function Card(index) {
     this.place = 0;
 }
 
-function Player(name) {
-    this.name = name;
+function Player(arg) {
+    this.name = arg.name;
+    this.id = arg.id;
     this.onhand = [];
     this.ontable = [];
     this.score = 0;
@@ -139,9 +140,9 @@ Player.prototype.action = function($c) {
     this._invalid(`No card ${$c.suit+$c.value} onhand`);
     return false;
 }
-Player.prototype.play = function($c) {
+Player.prototype.play = function($c) { //card or index
     let card = this.onhand.find((c, i) => {
-        if (c === $c) {
+        if (c === $c || c.index === $c) {
             this.onhand.splice(i, 1)
             return true;
         }
@@ -201,7 +202,7 @@ function Game(arg) {
     //-----
     this.start = () => {}
     this.action = () => {}
-    this.roundEnd = () => {}
+    this.roundEnd = () => {} //Promise
     this.setEnd = () => {}
     this.actionValid = () => {}
 }
@@ -214,7 +215,7 @@ Game.prototype.check = function() {
         message += 'players number < 4\n';
     let checkName = {};
     this.players.forEach((p) => {
-        checkName[p.name] = 1;
+        checkName[p.id] = 1;
     })
     if (Object.keys(checkName).length != this.players.length)
         message += "players' name repeat."
@@ -236,9 +237,14 @@ Game.prototype.init = function() {
                 this._action(p, card)
                 this.action(p, card);
                 if (this.inRound === 4) {
-                    this.roundEnd()
+                    this.roundEnd().then(() => {
+                        if (p.onhand.length === 0) {
+                            this._setEnd();
+                            this.setEnd();
+                        } 
+                    })
                     this._roundEnd()
-                } 
+                }
             } else {
                 debug(validate)
                 if (this.actionReject)
@@ -249,11 +255,17 @@ Game.prototype.init = function() {
 }
 Game.prototype.wash = function() {
     debug('wash deck')
-    let d = this.deck;
-    d.cut()
-    d.shuffling(10)
+    let d = this.deck;    
+    d.shuffling(5)
     d.riffle()
-    d.shuffling(10)
+    d.cut()
+    d.shuffling(5)
+    d.riffle()
+    d.cut()
+    d.shuffling(5)
+    d.riffle()
+    d.cut()
+    d.shuffling(5)
     d.riffle()
     d.cut()
 }
@@ -266,6 +278,7 @@ Game.prototype.licensing = function() {
     })
 }
 Game.prototype.findNext = function(p) {
+    console.log(this.players[(p.index + 1) % 4].id)
     return this.players[(p.index + 1) % 4];
 }
 Game.prototype._action = function(p, card) {
@@ -278,16 +291,8 @@ Game.prototype._action = function(p, card) {
     if (this.inRound === 0)
         this.roundColor = card.suit;
     this.inRound++;
-    if (this.inRound === 4) {
-        if (p.onhand.length === 0) {
-            this.setEnd();
-            this._setEnd();
-        } else {
-            //this.findNext(p).status = 'play';
-        }
-    } else {
+    if (this.inRound !== 4)
         this.findNext(p).status = 'play';
-    }
 }
 Game.prototype._roundEnd = function() {
     this.round++;
@@ -295,8 +300,65 @@ Game.prototype._roundEnd = function() {
     this.roundPlayed = [];
 }
 Game.prototype._setEnd = function() {
+    this.players.forEach((player) => { //計分
+        let score = 0;
+        let score_length = 0;
+        let mult = 1;
+        let pig = 0;
+        let sheet = 0;
+        player.ontable.forEach((card) => {
+            if (card.role === 'score') {
+                score_length++;
+                switch (card.value) {
+                    case 'A':
+                        score -= 50
+                        break;
+                    case 'K':
+                        score -= 40
+                        break;
+                    case 'Q':
+                        score -= 30
+                        break;
+                    case 'J':
+                        score -= 20
+                        break;
+                    case '4':
+                        score -= 10
+                        break;
+                    default:
+                        score -= parseInt(card.value)
+                        break;
+                }
+            } else if (card.role === 'pig') {
+                player.status = 'play';
+                pig = -100
+            } else if (card.role === 'sheet') {
+                sheet = 100;
+            } else if (card.role === 'double') {
+                mult = 2;
+            }
+        })
+        if ((score_length === 13 && mult === 2) && (pig && sheet)) { //全吃 1000分
+            score = 1000;
+        } else {
+            if (score_length === 13) { //全吃紅心 豬羊變色 紅心正分
+                score *= -1;
+                pig *= -1
+                sheet *= -1;
+            }
+            if (score_length === 0 && mult === 2) { //只吃梅花10=>50分
+                score = 25;
+            }
+            score = (score + pig + sheet) * mult;
+        }
+        player.score += score;
+    })
+    this.isVoid = false;
     this.round = 0;
     this.set++;
+    this.players.forEach((p, i) => { // in ._setEnd()?? fail
+        p.ontable = [];
+    })
 }
 Game.prototype._invalid = function(e) {
     debug(e)
@@ -350,3 +412,4 @@ Game.prototype._invalid = function(e) {
 
 exports.Game = Game;
 exports.Player = Player;
+exports.Card = Card;

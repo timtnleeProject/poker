@@ -8,14 +8,15 @@ function generate(num){
 	return rlt;
 }
 
-function getUniqueId(num,list){
+function getUniqueId(num,list,addToList){
 	return new Promise((res,rej)=>{
 		let repeat = ()=>{
 			let id = generate(num);
 			if(list[id]!==undefined){
 				setImmediate(repeat)
 			} else{
-				list[id]={};
+				if(addToList===true)
+						list[id]={};
 				res(id)
 			}
 		}

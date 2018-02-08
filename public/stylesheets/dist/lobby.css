@@ -18,16 +18,16 @@
 }
 /*----------------chat------------------*/
 .chat-pos{
-	width: 360px;
 	pointer-events: none;
+	width: 360px;
 	position: fixed;
 	bottom: 5px;
 	left: 5px;
 }
 .chat{	
-	background-color: rgba(33,149,128,0.2);	
 	pointer-events: none;
-	-webkit-box-sizing: border-box;
+	background-color: rgba(33,149,128,0.2);	
+	-webkit-box-sizing: border-box;	
 	        box-sizing: border-box;
 	width: 100%;
 	height: 200px;
@@ -90,41 +90,42 @@ button.ready{
 
 /*----------------game------------------*/
 :root{
-  --myWidth:5%;
+  --myWidth:4%;/*ontable*/
+  --myWidth2:5%;/*played*/
 }
 .table{
 	background-color: #008844;
 	width: 100%;
 	border: 1px solid black;
-	height: 65vh;
+	height: 70vh;
 	position: relative;
 }
 .table .played{
 	position: absolute;
-	width: var(--myWidth);
+	width: var(--myWidth2);
 }.table .played img{
 	width: 100%;
 }
 .table .played-0{
-	top: calc(50% + var(--myWidth));
+	top: calc(50% + var(--myWidth2));
 	left:50%;
 	-webkit-transform: translateX(-50%);
 	        transform: translateX(-50%);
 }
 .table .played-1{	
-	left: calc(50% + var(--myWidth));
+	left: calc(50% + var(--myWidth2));
 	top:50%;
 	-webkit-transform: translateY(-50%);
 	        transform: translateY(-50%);
 }
 .table .played-2{
-	bottom: calc(50% + var(--myWidth));
+	bottom: calc(50% + var(--myWidth2));
 	left:50%;
 	-webkit-transform: translateX(-50%);
 	        transform: translateX(-50%);
 }
 .table .played-3{
-	right: calc(50% + var(--myWidth));
+	right: calc(50% + var(--myWidth2));
 	top:50%;
 	-webkit-transform: translateY(-50%);
 	        transform: translateY(-50%);
@@ -139,60 +140,51 @@ button.ready{
 	position: absolute;
 }
 .ontable-0{
-	-ms-flex-wrap: wrap-reverse;
-	    flex-wrap: wrap-reverse;
 	bottom: 5px;
-	width: 100%;
-}.ontable-0>.card{
-	width: var(--myWidth);
-}.ontable-0>.card>img{
-	width: 100%;
 }
 .ontable-1{
+	right: 5px;
+}
+.ontable-2{
+	top:  5px;
+}
+.ontable-3{
+	left: 5px;
+}
+.ontable-0,.ontable-2{
+	-ms-flex-wrap: wrap-reverse;
+	    flex-wrap: wrap-reverse;
+	width: 100%;
+}.ontable-0>.card,.ontable-2>.card{
+	width: calc(var(--myWidth)/2);
+}.ontable-0>.card>img,.ontable-2>.card>img{
+	width: 200%;
+}
+.ontable-1,.ontable-3{
 	-ms-flex-wrap: wrap-reverse;
 	    flex-wrap: wrap-reverse;
 	-webkit-box-orient: vertical;
 	-webkit-box-direction: normal;
 	    -ms-flex-direction: column;
 	        flex-direction: column;
-	right: 5px;
 	height: 100%;
 	width: var(--myWidth);
 }
-.ontable-1>.card{
+.ontable-1>.card,.ontable-3>.card{
+	position: relative;
 	margin:0;
 	-ms-flex-negative: 0;
 	    flex-shrink: 0; 
 	width: 100%;
-}.ontable-1>.card>img{
+	height: 6%;
+}.ontable-1>.card>img,.ontable-3>.card>img{
+	position: absolute;
+	top: 50%;
+	-webkit-transform: translateY(-50%);
+	        transform: translateY(-50%);
 	width: 100%;
 }
-.ontable-2{
-	-ms-flex-wrap: wrap;
-	    flex-wrap: wrap;
-	top:5px;
-	width: 100%;
-}.ontable-2>.card{
-	width: var(--myWidth);
-}.ontable-2>.card>img{
-	width: 100%;
-}
-.ontable-3{
-	-ms-flex-wrap: wrap;
-	    flex-wrap: wrap;
-	-webkit-box-orient: vertical;
-	-webkit-box-direction: normal;
-	    -ms-flex-direction: column;
-	        flex-direction: column;
-	left: 5px;
-	height: 100%;
-	width: var(--myWidth);
-}
-.ontable-3>.card{
-	width: 100%;
-}.ontable-3>.card>img{
-	width: 100%;
-}
+
 .onhand{
 	width: 100%;
 	display: -webkit-box;
@@ -227,17 +219,18 @@ button.ready{
 	width: 100%;
 }
 #notification{
-	top:30vh;
+	top:20vh;
 	opacity: 0;
 	position: fixed;
 	pointer-events: none;
 	width: 100%;
-	background-color: rgba(175,175,175,0.3);
+	background-color: rgba(255,255,255,0.8);
 	padding: 20px;
+	-webkit-transition: opacity 1s;
+	transition: opacity 1s;
 }
-#notification.fade{
-	-webkit-animation: fade 1.5s;
-	        animation: fade 1.5s;
+#notification.show{
+	opacity: 1;
 }
 @-webkit-keyframes fade {
     0% {opacity: 0;}
@@ -250,5 +243,12 @@ button.ready{
     100% {opacity: 0;}
 }
 
-/*----------------------------------*/
+/*----------------vue---------------*/
+.fade-enter-active, .fade-leave-active {
+  -webkit-transition: opacity .5s;
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
 /*# sourceMappingURL=lobby.css.map */
