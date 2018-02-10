@@ -227,14 +227,14 @@ function lobby(io) {
                     //timer
                     let timer;
                     let timer2;
-                    let isPlaying = ()=>room.game.players.find((p) => {
+                    let isPlaying = ()=> room.game.players.find((p) => {
                             return p.status === 'play'
                         })
                     let startTimer = function(){
                         timer=setTimeout(()=>{ //字動出牌 
-                            let player=isPlaying()
                             if(room.game===undefined)
-                                return;
+                                return undefined;
+                            let player=isPlaying()
                             let mes = player.name+' overtime. Throw a card automatically.'
                             lobby.to(id).emit('card event', 'notification', mes)
                             room.game.autoPlay(player);
