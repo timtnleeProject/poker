@@ -68,7 +68,7 @@ socket.on('client room', function(event, arg) {
 })
 socket.on('chat', function(mes) {
     let style = ['black', 'blue', 'red', 'gray'];
-    let index = app.members_room.indexOf(mes.name);
+    let index = app.members_room.indexOf(mes.id);
     mes.style = style[index];
     app.messages.push(mes);
 })

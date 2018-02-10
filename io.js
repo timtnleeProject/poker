@@ -227,27 +227,27 @@ function lobby(io) {
                     //timer
                     let timer;
                     let timer2;
-                    let isPlaying = ()=> room.game.players.find((p) => {
-                            return p.status === 'play'
-                        })
-                    let startTimer = function(){
-                        timer=setTimeout(()=>{ //字動出牌 
-                            if(room.game===undefined)
+                    let isPlaying = () => room.game.players.find((p) => {
+                        return p.status === 'play'
+                    })
+                    let startTimer = function() {
+                        timer = setTimeout(() => { //字動出牌 
+                            if (room.game === undefined)
                                 return undefined;
-                            let player=isPlaying()
-                            let mes = player.name+' overtime. Throw a card automatically.'
+                            let player = isPlaying()
+                            let mes = player.name + ' overtime. Throw a card automatically.'
                             lobby.to(id).emit('card event', 'notification', mes)
                             room.game.autoPlay(player);
-                        },room.game.timeLimit);
-                        timer2 = setTimeout(()=>{//提醒
-                            let player=isPlaying()
-                            if(players[player.id]===undefined)
+                        }, room.game.timeLimit);
+                        timer2 = setTimeout(() => { //提醒
+                            let player = isPlaying()
+                            if (players[player.id] === undefined)
                                 return;
                             let sessionId = players[player.id].id;
                             lobby.to(sessionId).emit('card event', 'notification', '10 secends left.')
-                        },room.game.timeLimit-11000)
+                        }, room.game.timeLimit - 11000)
                     }
-                    let clearTimer =function(){
+                    let clearTimer = function() {
                         clearTimeout(timer);
                         clearTimeout(timer2)
                     }
@@ -292,7 +292,7 @@ function lobby(io) {
                     room.game.action = (p, c) => { //after ._action
                         lobby.to(id).emit('card event', 'play', { player: p, game: room.game })
                         clearTimer()
-                        if(room.game.inRound!==4)
+                        if (room.game.inRound !== 4)
                             startTimer()
                     }
                     room.game.roundDelay = 1800;
@@ -376,7 +376,8 @@ function lobby(io) {
             }
             let room = players[user].atRoom;
             lobby.to(room).emit('chat', {
-                name: user,
+                name: userName,
+                id: user,
                 mes: mes
             })
         })
