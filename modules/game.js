@@ -197,8 +197,9 @@ function Game(arg) {
     this.inRound = 0;
     this.roundColor = '';
     this.roundPlayed = [];
-    this.maxSet = arg.maxSet || false;
+    this.maxSets = arg.maxSets || false;
     this.maxScore = arg.maxScore || false;
+    this.timeLimit = arg.timeLimit*1000;
     //-----
     this.start = () => {}
     this.action = () => {}
@@ -278,8 +279,32 @@ Game.prototype.licensing = function() {
     })
 }
 Game.prototype.findNext = function(p) {
-    console.log(this.players[(p.index + 1) % 4].id)
     return this.players[(p.index + 1) % 4];
+}
+Game.prototype.autoPlay = function(p){
+    let sameColor=p.onhand.find((c)=>{
+        return c.suit===this.roundColor;
+    })
+    let hasOther= p.onhand.find((c)=>{
+        return c.suit!=='heart';
+    })
+    let card;
+    if(sameColor){
+        console.log('sameColor')
+        console.log(this.roundColor)
+       card=sameColor;
+    } else if(this.isVoid){
+        card=p.onhand[0];
+    } else if(!hasOther){
+        card=p.onhand[0];
+    } else{
+
+        card=p.onhand.find((c)=>{
+            return c.suit!=='heart';
+        })
+        console.log(card)
+    }
+    p.action(card)
 }
 Game.prototype._action = function(p, card) {
     p.play(card)
@@ -379,6 +404,7 @@ Game.prototype._invalid = function(e) {
 //     players: players,
 //     sets: 2
 // })
+
 // console.log(new Deck())
 // g.action = function(p, card) {
 //     // let span = document.getElementById('card' + card.index);
@@ -409,7 +435,6 @@ Game.prototype._invalid = function(e) {
 //     g.start()
 //     players[0].status = 'play'
 // }
-
 exports.Game = Game;
 exports.Player = Player;
 exports.Card = Card;

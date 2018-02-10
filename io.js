@@ -118,7 +118,7 @@ function lobby(io) {
             return;
         }
         let user = socket.handshake.session.userId; //user:  Id
-        let userName = socket.handshake.session.userName;//userName: name
+        let userName = socket.handshake.session.userName; //userName: name
         //***************************************test
         // socket.join('abcde')
         // rooms.abcde.members[user] = {
@@ -128,7 +128,7 @@ function lobby(io) {
         // lobby.to('abcde').emit('client room', 'join', rooms.abcde)
         // console.log(rooms)
         //***************************************test
-        socket.emit('init room', rooms, {id:user,name:userName});
+        socket.emit('init room', rooms, { id: user, name: userName });
         socket.on('room event', (event, arg) => { //arg
             if (players[user] === undefined) {
                 socket.emit('reject', '請重新整理')
@@ -139,10 +139,13 @@ function lobby(io) {
                 getId(5, rooms).then((id) => {
                     let newRoom = {
                         id: id,
-                        name: arg,
+                        name: arg.roomName,
                         host: user,
                         members: {},
-                        status: 'waiting'
+                        status: 'waiting',
+                        maxScore: arg.maxScore,
+                        time: arg.time,
+                        maxSets: arg.maxSets
                     };
                     newRoom.members[user] = { // new member
                         id: user,
@@ -189,7 +192,7 @@ function lobby(io) {
                 if (room && room.members[_user]) {
                     room.members[_user].status = arg.ready;
                 } else {
-                    socket.emit('reject', '請重新整理')
+                    socket.emit('reject', 'Please Reload The page.')
                     return;
                 }
                 lobby.to(id).emit('client room', 'status', room.members[_user]);
@@ -206,12 +209,13 @@ function lobby(io) {
                     room.status = 'playing';
                     lobby.emit('update room', 'join', room)
                     room.game = new Game({
-                        maxSet: 20,
-                        maxScore: 1000
+                        maxSets: room.maxSets,
+                        maxScore: room.maxScore,
+                        timeLimit: room.time
                     })
                     for (let i in room.members) {
                         //let member = room.members[i];
-                        let p = new Player({name:room.members[i].name,id:room.members[i].id});
+                        let p = new Player({ name: room.members[i].name, id: room.members[i].id });
                         //players[i].player = ;
                         p.invalid = (e) => {
                             lobby.to(players[i].id).emit('card event', 'notification', e)
@@ -220,6 +224,33 @@ function lobby(io) {
                         //member.player = players[i].player;
                         room.game.join(players[i].player);
                     }
+                    //timer
+                    let timer;
+                    let timer2;
+                    let isPlaying = ()=>room.game.players.find((p) => {
+                            return p.status === 'play'
+                        })
+                    let startTimer = function(){
+                        timer=setTimeout(()=>{ //字動出牌 
+                            let player=isPlaying()
+                            if(room.game===undefined)
+                                return;
+                            let mes = player.name+' overtime. Throw a card automatically.'
+                            lobby.to(id).emit('card event', 'notification', mes)
+                            room.game.autoPlay(player);
+                        },room.game.timeLimit);
+                        timer2 = setTimeout(()=>{//提醒
+                            let player=isPlaying()
+                            if(players[player.id]===undefined)
+                                return;
+                            let sessionId = players[player.id].id;
+                            lobby.to(sessionId).emit('card event', 'notification', '10 secends left.')
+                        },room.game.timeLimit-11000)
+                    }
+                    let clearTimer =function(){
+                        clearTimeout(timer);
+                        clearTimeout(timer2)
+                    }
                     room.game.init();
                     room.game.start = () => {
                         room.game.wash()
@@ -227,6 +258,7 @@ function lobby(io) {
                         if (room.game.set === 0)
                             room.game.players[0].status = 'play';
                         lobby.to(id).emit('card event', 'start', room.game)
+                        startTimer();
                     }
                     room.game.actionReject = (p, mes) => { //to one
                         debug('gamer action reject')
@@ -251,7 +283,7 @@ function lobby(io) {
                                 })
                                 if (found)
                                     validate = "You Still have " + this.roundColor;
-                                else if (c.suit==='heart'&&!this.isVoid)
+                                else if (c.suit === 'heart' && !this.isVoid)
                                     this.isVoid = true;
                             }
                         }
@@ -259,6 +291,9 @@ function lobby(io) {
                     }
                     room.game.action = (p, c) => { //after ._action
                         lobby.to(id).emit('card event', 'play', { player: p, game: room.game })
+                        clearTimer()
+                        if(room.game.inRound!==4)
+                            startTimer()
                     }
                     room.game.roundDelay = 1800;
                     room.game.roundEnd = function() { //before ._roundEnd
@@ -281,12 +316,14 @@ function lobby(io) {
                                 if (biggest.player.onhand.length !== 0)
                                     biggest.player.status = 'play';
                                 lobby.to(id).emit('card event', 'round', room.game.players)
+                                startTimer()
+                                debug('round end')
                                 resolve()
                             }, room.game.roundDelay)
                         })
                     }
                     room.game.isEnd = function() {
-                        if (this.set === this.maxSet)
+                        if (this.set === this.maxSets)
                             return true;
                         let player = this.players.find((p) => {
                             return p.score >= this.maxScore || p.score <= this.maxScore * -1;
@@ -299,13 +336,15 @@ function lobby(io) {
                     room.game.setDelay = 3000;
                     room.game.setEnd = function() { //after._setEnd()
                         if (!this.isEnd()) {
-                            debug('set end')                            
+                            debug('set end')
                             setTimeout(() => {
                                 lobby.to(id).emit('card event', 'notification', 'set' + (this.set + 1) + ' start');
+                                debug('start')
                                 room.game.start()
                             }, room.game.setDelay)
                             // lobby.to(id).emit('card event', 'set', room.game.players)
                         } else {
+                            lobby.to(id).emit('card event', 'notification', 'Game end');
                             setTimeout(() => {
                                 leaveGame(id);
                             }, 5000)
@@ -347,10 +386,10 @@ function lobby(io) {
                 return;
             if (players[user].atRoom !== undefined) { //at room
                 let roomId = players[user].atRoom;
-                if (rooms[roomId].status === 'playing'){//at game
-                    lobby.to(roomId).emit('card event','notification', user+' quits this game.')
-                    setTimeout(()=>{leaveGame(roomId)},2000)
-                } 
+                if (rooms[roomId].status === 'playing') { //at game
+                    lobby.to(roomId).emit('card event', 'notification', user + ' quits this game.')
+                    setTimeout(() => { leaveGame(roomId) }, 2000)
+                }
                 leaveRoom(user, false, true)
             } else if (players[user].atRoom === undefined) { // at lobby
                 delete players[user]
@@ -364,17 +403,17 @@ function lobby(io) {
         delete theRoom.members[user];
         if (Object.keys(theRoom.members).length === 0) { //房間沒人
             delete rooms[roomId]
-            lobby.emit('update room', 'delete', theRoom)//update room 是大廳的event /所有人
+            lobby.emit('update room', 'delete', theRoom) //update room 是大廳的event /所有人
         } else { //房間有人
             lobby.to(roomId).emit('client room', 'others leave', theRoom)
             lobby.emit('update room', 'leave', theRoom)
         }
-        if (socket)//leave room (socket.io), to lobby
+        if (socket) //leave room (socket.io), to lobby
             socket.leave(roomId)
-        if (disconnect && disableSameDevice)//disconnected
+        if (disconnect && disableSameDevice) //disconnected
             delete players[user]
         else // leave room , to lobby
-            players[user] = {name:players[user].name};
+            players[user] = { name: players[user].name };
     }
 
     function leaveGame(roomName) {

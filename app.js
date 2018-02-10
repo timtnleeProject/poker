@@ -47,10 +47,10 @@ app.get('/test/sessionId',(req,res)=>{
 })
 //****test
 let disableSameDevice = process.env.device;
-let logindev = true;
+let logindev = process.env.logindev;
 //certificate
 app.use((req,res,next)=>{
-    if(logindev){
+    if(logindev=='yes'){
         debug('test: auto login')
         req.session.userName ='developer'
         next();

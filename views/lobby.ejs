@@ -13,31 +13,44 @@
             <template v-if="content==='lobby'">
                 <div class="container-center content">
                     <h1>LOBBY</h1>
-                    <form class="form re h-center">
-                        <label>Room Name</label>
-                        <input id="roomName" type="text" name="roomName" v-model="roomSetting.name" placeholder="room name">
-                        <small class="invalid">{{create_invalid}}</small>
-                        <!-- <label title="Time Limit in Every Player's turn">Time Limit (sec.)</label>
-                        <input v-model="roomSetting.time" type="number" name="" min="30" max="100" step="10">
-                        <label title="Maximun Sets of Game">Max Sets</label>
-                        <input type="number" name="" value="10" placeholder=""> -->
-                        <input class="btn btn-default" v-on:click="createRoom($event)" type="submit" value="Create Room">
+                    <button class="btn btn-default" v-on:click="roomSetting.show=!roomSetting.show">Create Room</button>
+                    <small>or join the rooms below</small>
+                        <form v-if="roomSetting.show" class="form form-2">
+                            <div class="col">
+                                <label>Room Name</label>
+                                <input id="roomName" type="text" name="roomName" v-model="roomSetting.name" placeholder="room name">
+                                <label title="Time Limit in Every Player's turn">Time Limit (sec.)</label>
+                        <input v-model="roomSetting.time" type="number" name="" min="20" max="120" step="10">
+                            </div>
+                            <div class="col">
+                                <label title="Maximun Sets of Game">Max Sets</label>
+                                <input type="number" v-model="roomSetting.maxSets" value="10" min="1" max="99">
+                                <label v-bind:title="'When score reach &plusmn '+roomSetting.maxScore+' game end.'">&plusmn Score</label>
+                                <input type="number" v-model="roomSetting.maxScore" name="" value="500" step="250" min="250" max="2000">
+                                <small class="invalid">{{create_invalid}}</small>
+                                <input class="btn btn-dark" v-on:click="createRoom($event)" type="submit" value="Create Room">
+                            </div>
                     </form>
                     <div class="empty centered-block" v-if="Object.keys(rooms).length==0">
                         <span>No Rooms Here. Create Yourself and Invite Some Friends!</span>
                     </div>
                     <div class="rooms" v-for="(item, key, index) in rooms" v-bind:class={notactive:!members_notactive[index]} v-on:click="enter(rooms[key].id)">
-                            <div><label>Name: </label>{{rooms[key].name}}</div>
-                            <div><label>ID: </label>{{rooms[key].id}}</div>
+                            <div>
+                                <div><label>Name: </label>{{rooms[key].name}}</div>
+                                <div><label>ID: </label>{{rooms[key].id}}</div>
+                            </div>
                             <!-- <div>host:{{rooms[key].host}}</div> -->
-                            <div><label>Members: </label>{{members_lob[index]}}</div>
-                            <div><label>Status: </label>{{rooms[key].status}}</div>
-                    </div>
-                    <div id="setRoom" v-if="roomSetting.show">
-                        <input type="text" name="">
-                        <input type="number" value="1000" min="500" max="2000" step="500">
-                        <input type="number">
-                        <input v-on:click="createRoom($event)" type="submit" value="Create Room">
+                            <div>
+                                <div><label>Members: </label>{{members_lob[index]}}</div>
+                                <div><label>Max Set: </label>{{rooms[key].maxSets}}</div>
+                            </div>
+                            <div>
+                                <div><label>Time: </label>{{rooms[key].time}} s</div>
+                                <div><label>Score: </label>{{rooms[key].maxScore}}</div>
+                            </div>
+                            <div>
+                                <div><label>Status: </label>{{rooms[key].status}}</div>
+                            </div>
                     </div>
                     <div v-if="denied.show" id="denied">
                         <div class="re v-center h-center"><span class="warning">Error : </span>{{denied.message}}</div>
@@ -100,6 +113,9 @@
                     </form>
                 </div>
             </template>
+        </div>
+        <div class="media">
+            <audio src="/media/short_punch1.mp3" id="sound-play"></audio>
         </div>
 </body>
 

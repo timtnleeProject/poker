@@ -82,6 +82,7 @@ socket.on('card event', function(name, arg) {
             app.Game=arg;
             break;
         case 'play':
+            document.getElementById('sound-play').play()
             app.Game.players.find(function(p, i) {
                 if (p.index === arg.player.index)
                     Vue.set(app.Game.players, i, arg.player)
@@ -132,7 +133,7 @@ var app = new Vue({
             name: '',
             maxSets: 10,
             maxScore: 500,
-            time:60,
+            time:30,
             show: false
         },
         //atRoom: {},
@@ -164,8 +165,19 @@ var app = new Vue({
                 this.create_invalid='name is empty.'
             } else if(input.length>=12){
                 this.create_invalid='over 12 characters.'
-            } else{
-                socket.emit('room event', 'create', input);
+            } else if(this.roomSetting.maxSets>100||this.roomSetting.maxSets<1){
+                this.create_invalid='Max Sets should between 1 and 99';
+            } else if(this.roomSetting.time>120||this.roomSetting.time<20){
+                this.create_invalid='Time Limit should between 30 and 120';
+            } else if(this.roomSetting.maxScore>2000||this.roomSetting.maxScore<250){
+                this.create_invalid='Score should between 250 and 2000';
+            }else{
+                socket.emit('room event', 'create', {
+                    roomName:input,
+                    maxSets: this.roomSetting.maxSets,
+                    maxScore: this.roomSetting.maxScore,
+                    time:this.roomSetting.time
+                });
             }
         },
         leaveRoom: function() {
