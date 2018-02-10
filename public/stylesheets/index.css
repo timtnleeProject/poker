@@ -1,0 +1,43 @@
+.container-center{
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+}
+#title{
+	color: red;
+	text-shadow: 1px 1px 1px black;
+}
+.fancy-btn{
+	border-radius: 3px;
+	padding: 10px;
+	overflow: hidden;
+	width: 100%;
+	max-width: 150px;
+}
+.fancy-btn>.con{
+	transition: transform 1s;
+	justify-content: center;
+	display: flex;
+	width: 200%;
+}
+.fancy-btn:hover>.con{
+	transform: translateX(-50%);
+}
+.fancy-btn>.con>*{
+	width: 50%;
+}
+.form{
+	max-width: 300px;
+	width: 100%;
+	justify-content: center;
+}
+.form>*{
+	font-size: 1.2rem;
+}
+.form>input{
+	padding: 1px;	
+}
+.form>small{
+	padding: 1px;
+	font-size: 12px;
+}

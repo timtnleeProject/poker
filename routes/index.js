@@ -10,6 +10,11 @@ router.get('/login', function(req, res, next) {
 	else
   		res.render('login', { title: 'Hearts' });
 })
+router.get('/signout' ,(req,res,next)=>{
+	if(req.session.userName)
+		req.session.userName = undefined;
+	res.redirect('/')
+})
 //*********post***********
 router.post('/login', (req,res)=>{
 	req.session.userName = req.body.name;

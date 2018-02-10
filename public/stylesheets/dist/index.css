@@ -1,0 +1,59 @@
+.container-center{
+	text-align: center;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	    -ms-flex-direction: column;
+	        flex-direction: column;
+}
+#title{
+	color: red;
+	text-shadow: 1px 1px 1px black;
+}
+.fancy-btn{
+	border-radius: 3px;
+	padding: 10px;
+	overflow: hidden;
+	width: 100%;
+	max-width: 150px;
+}
+.fancy-btn>.con{
+	-webkit-transition: -webkit-transform 1s;
+	transition: -webkit-transform 1s;
+	transition: transform 1s;
+	transition: transform 1s, -webkit-transform 1s;
+	-webkit-box-pack: center;
+	    -ms-flex-pack: center;
+	        justify-content: center;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	width: 200%;
+}
+.fancy-btn:hover>.con{
+	-webkit-transform: translateX(-50%);
+	        transform: translateX(-50%);
+}
+.fancy-btn>.con>*{
+	width: 50%;
+}
+.form{
+	max-width: 300px;
+	width: 100%;
+	-webkit-box-pack: center;
+	    -ms-flex-pack: center;
+	        justify-content: center;
+}
+.form>*{
+	font-size: 1.2rem;
+}
+.form>input{
+	padding: 1px;	
+}
+.form>small{
+	padding: 1px;
+	font-size: 12px;
+}
+/*# sourceMappingURL=index.css.map */

@@ -1,12 +1,53 @@
+/*----------------lobby------------------*/
+.container-center{
+	text-align: center;
+}
+.form{
+	width: 100%;
+	max-width: 150px;
+}
+.form>label{
+	margin-bottom: 1px;
+}
+.form>input{
+	margin-bottom: 3px;
+}
+.empty{
+	box-sizing:border-box;
+	height: 70px;
+	padding: 5px;
+	margin-top: 10px;
+	color: rgba(100,100,100,0.3);
+	border: 2px solid rgba(100,100,100,0.1);
+}
 .rooms{
+	text-align: center;
+	display: flex;
 	cursor: pointer;
 	border: 1px solid gray;
+	box-sizing:border-box;
+	height: 70px;
 	padding: 5px;
-	margin: 5px 0px 5px 0px;
+	margin-top: 10px;
+	color: gray;
 }
-/*----------------lobby------------------*/
+.rooms.notactive{
+	background-color: rgba(220,220,220,0.6);
+}
 .rooms:hover{
 	background-color: rgba(220,220,220,0.6);
+}
+.rooms>div{
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	flex-grow: 1;
+}
+.rooms>div>p{
+	flex-grow: 1;
+}
+.rooms>div>label{
+	color: #ff9224;
 }
 #denied{
 	position: fixed;

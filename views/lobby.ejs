@@ -8,31 +8,40 @@
 </head>
 
 <body>
-    <div id="app">
-            <% include parts/header %>
+    <% include parts/header %>
+        <div id="app" class="content">
             <template v-if="content==='lobby'">
-                <div class="content">
-                <h1>LOBBY</h1>
-                <form>
-                    <input id="roomName" type="text" name="roomName" v-model:value="roomName" placeholder="room name">
-                    <input v-on:click="createRoom($event)" type="submit" value="Create Room">
-                </form>
-                <div class="rooms" v-for="(item, key, index) in rooms" v-on:click="enter(rooms[key].id)">
-                    <p>name:{{rooms[key].name}}</p>
-                    <p>ID:{{rooms[key].id}}</p>
-                    <p>host:{{rooms[key].host}}</p>
-                    <p>member:{{members_lob[index]}}</p>
-                    <p>status:{{rooms[key].status}}</p>
-                </div>
-                <div id="setRoom" v-if="roomSetting.show">
-                    <input type="text" name="">
-                    <input type="number" value="1000" min="500" max="2000" step="500">
-                    <input type="number">
-                    <input v-on:click="createRoom($event)" type="submit" value="Create Room">
-                </div>
-                <div v-if="denied.show" id="denied">
-                    <div class="re v-center h-center">{{denied.message}}</div>
-                </div>
+                <div class="container-center content">
+                    <h1>LOBBY</h1>
+                    <form class="form re h-center">
+                        <label>Room Name</label>
+                        <input id="roomName" type="text" name="roomName" v-model="roomSetting.name" placeholder="room name">
+                        <small class="invalid">{{create_invalid}}</small>
+                        <!-- <label title="Time Limit in Every Player's turn">Time Limit (sec.)</label>
+                        <input v-model="roomSetting.time" type="number" name="" min="30" max="100" step="10">
+                        <label title="Maximun Sets of Game">Max Sets</label>
+                        <input type="number" name="" value="10" placeholder=""> -->
+                        <input class="btn btn-default" v-on:click="createRoom($event)" type="submit" value="Create Room">
+                    </form>
+                    <div class="empty centered-block" v-if="Object.keys(rooms).length==0">
+                        <span>No Rooms Here. Create Yourself and Invite Some Friends!</span>
+                    </div>
+                    <div class="rooms" v-for="(item, key, index) in rooms" v-bind:class={notactive:!members_notactive[index]} v-on:click="enter(rooms[key].id)">
+                            <div><label>Name: </label>{{rooms[key].name}}</div>
+                            <div><label>ID: </label>{{rooms[key].id}}</div>
+                            <!-- <div>host:{{rooms[key].host}}</div> -->
+                            <div><label>Members: </label>{{members_lob[index]}}</div>
+                            <div><label>Status: </label>{{rooms[key].status}}</div>
+                    </div>
+                    <div id="setRoom" v-if="roomSetting.show">
+                        <input type="text" name="">
+                        <input type="number" value="1000" min="500" max="2000" step="500">
+                        <input type="number">
+                        <input v-on:click="createRoom($event)" type="submit" value="Create Room">
+                    </div>
+                    <div v-if="denied.show" id="denied">
+                        <div class="re v-center h-center"><span class="warning">Error : </span>{{denied.message}}</div>
+                    </div>
                 </div>
             </template>
             <template v-else-if="content==='room'">

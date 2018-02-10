@@ -3,19 +3,22 @@
 
 <head>
     <% include parts/head %>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/dist/index.css">
 </head>
 
 <body>
-    <div id="app">
-        <% include parts/header %>
-        <div class="content">
-        	<h1><%= title %></h1>
-            <p>Welcome to
-                <%= title %>
-            </p>
-            <a href="/lobby">Start</a>
+    <% include parts/header %>
+    <div id="app" class="content">
+        <div class="container-center content">
+        	<h1 id="title">Hearts</h1>
+            <small class="margin-l">Online Poker Game</small>
+            <a class="re h-center fancy-btn btn btn-warm" href="/lobby">
+                <div class="con">
+                    <div>PLAY</div>
+                    <div>Let's GO</div>
+                </div>                
+            </a>
         </div>           
     </div>
 </body>
-
 </html>

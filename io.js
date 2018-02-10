@@ -83,14 +83,15 @@ function lobby(io) {
             let roomName = players[user].atRoom;
             if (disableSameDevice == 'yes') {
                 if (roomName !== undefined && rooms[roomName].status === 'waiting') {
-                    leaveRoom(user, socket, true);
+                    leaveRoom(user);
                     socket.emit('client room', 'leave')
                 } else if (roomName !== undefined && rooms[roomName].status === 'playing') {
                     leaveGame(roomName);
-                    leaveRoom(user, socket, true)
+                    leaveRoom(user)
                     socket.emit('client room', 'leave')
                 }
-                socket._err = 'You have been connected on this device';
+                delete players[user];
+                socket._err = 'You have been connected on this device. All your connections will be closed.';
             }
         } else if (user === undefined) {
             //debug('no session')
@@ -368,12 +369,12 @@ function lobby(io) {
             lobby.to(roomId).emit('client room', 'others leave', theRoom)
             lobby.emit('update room', 'leave', theRoom)
         }
-        if (socket)
+        if (socket)//leave room (socket.io), to lobby
             socket.leave(roomId)
-        if (disconnect && disableSameDevice)
+        if (disconnect && disableSameDevice)//disconnected
             delete players[user]
-        else
-            players[user] = {};
+        else // leave room , to lobby
+            players[user] = {name:players[user].name};
     }
 
     function leaveGame(roomName) {

@@ -1,12 +1,68 @@
+/*----------------lobby------------------*/
+.container-center{
+	text-align: center;
+}
+.form{
+	width: 100%;
+	max-width: 150px;
+}
+.form>label{
+	margin-bottom: 1px;
+}
+.form>input{
+	margin-bottom: 3px;
+}
+.empty{
+	-webkit-box-sizing:border-box;
+	        box-sizing:border-box;
+	height: 70px;
+	padding: 5px;
+	margin-top: 10px;
+	color: rgba(100,100,100,0.3);
+	border: 2px solid rgba(100,100,100,0.1);
+}
 .rooms{
+	text-align: center;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
 	cursor: pointer;
 	border: 1px solid gray;
+	-webkit-box-sizing:border-box;
+	        box-sizing:border-box;
+	height: 70px;
 	padding: 5px;
-	margin: 5px 0px 5px 0px;
+	margin-top: 10px;
+	color: gray;
 }
-/*----------------lobby------------------*/
+.rooms.notactive{
+	background-color: rgba(220,220,220,0.6);
+}
 .rooms:hover{
 	background-color: rgba(220,220,220,0.6);
+}
+.rooms>div{
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-pack: center;
+	    -ms-flex-pack: center;
+	        justify-content: center;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	    -ms-flex-direction: column;
+	        flex-direction: column;
+	-webkit-box-flex: 1;
+	    -ms-flex-positive: 1;
+	        flex-grow: 1;
+}
+.rooms>div>p{
+	-webkit-box-flex: 1;
+	    -ms-flex-positive: 1;
+	        flex-grow: 1;
+}
+.rooms>div>label{
+	color: #ff9224;
 }
 #denied{
 	position: fixed;

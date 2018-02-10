@@ -34,16 +34,28 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(session);
 app.use(express.static(path.join(__dirname, 'public')));
-
-
+//****render var
+app.use((req,res,next)=>{
+    res.locals.session = req.session;
+    next()
+})
+//*******
 app.use('/', index);
 //***************test*********************
 app.get('/test/sessionId',(req,res)=>{
     res.end(JSON.stringify(record.sessionId))
 })
-//certificate
+//****test
 let disableSameDevice = process.env.device;
+let logindev = true;
+//certificate
 app.use((req,res,next)=>{
+    if(logindev){
+        debug('test: auto login')
+        req.session.userName ='developer'
+        next();
+        return
+    }
     if(req.session.userName)
             next();
     else

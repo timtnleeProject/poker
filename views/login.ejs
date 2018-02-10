@@ -3,21 +3,22 @@
 
 <head>
     <% include parts/head %>
-      <script src="/javascripts/login.js" defer></script>
+        <link rel="stylesheet" type="text/css" href="/stylesheets/dist/index.css">
+        <script src="/javascripts/login.js" defer></script>
 </head>
 
 <body>
-    <div id="app">
-        <% include parts/header %>
-            <div class="content">
-                <form id="form">
-                    <label>Pick a name :</label>
+    <% include parts/header %>
+        <div id="app" class="content">
+            <div class="container-center content">
+                <form id="form" class="form re h-center">
+                    <label>Pick a Name</label>
                     <input type="text" name="name" v-model="name">
-                    <span>{{invalid}}</span>
-                    <button id="button">submit</button>
+                    <small class="invalid">{{invalid}}</small>
+                    <button id="button" class="btn btn-default">submit</button>
                 </form>
             </div>
-    </div>
+        </div>
 </body>
 
 </html>

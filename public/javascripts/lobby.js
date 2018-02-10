@@ -123,15 +123,16 @@ var app = new Vue({
         userId: false,
         userName: false,
         rooms: {},
+        create_invalid:'',
         denied: {
             show: false,
             message: ''
         },
-        roomName: '',
         roomSetting: {
             name: '',
             maxSets: 10,
-            maxScore: 1000,
+            maxScore: 500,
+            time:60,
             show: false
         },
         //atRoom: {},
@@ -158,9 +159,12 @@ var app = new Vue({
         },
         createRoom: function(e) {
             e.preventDefault()
-            var input = this.roomName;
-            // var input = document.getElementById('roomName').value.trim(' ');
-            if (input.trim(' ') !== '') {
+            var input = this.roomSetting.name;
+            if(input.trim() === ''){
+                this.create_invalid='name is empty.'
+            } else if(input.length>=12){
+                this.create_invalid='over 12 characters.'
+            } else{
                 socket.emit('room event', 'create', input);
             }
         },
@@ -169,7 +173,7 @@ var app = new Vue({
         },
         sendMes: function(e) {
             e.preventDefault()
-            if (this.chatMessage.trim(' ') === '')
+            if (this.chatMessage.trim() === '')
                 return;
             if (this.chatMessage.length >= 40) {
                 this.chatMessage = this.chatMessage.slice(0, 40)
@@ -197,6 +201,14 @@ var app = new Vue({
             for (var i in this.rooms) {
                 ary.push(Object.keys(this.rooms[i].members).length)
             }
+            return ary
+        },
+        members_notactive : function(){
+            var ary = [];
+            this.members_lob.forEach(function(m){
+                console.log(m)
+                ary.push(m<4)
+            })
             return ary
         },
         members_game: function() {
