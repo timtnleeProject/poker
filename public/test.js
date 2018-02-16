@@ -377,21 +377,36 @@ var app = new Vue({
         //atRoom: {},
         //***************test
         atRoom: {
-            // id: 'abcde',
-            // name: 'gg',
-            // host: '',
-            // members: {},
-            // status: 'waiting'
+            id: 'abcde',
+            name: 'gg',
+            host: '',
+            members: {
+                '1234':{
+                    id:'asdds',
+                    name:'player1',
+                    status:true
+                },
+                '2234':{
+                    id:'aldmfl',
+                    name:'player2',
+                    status:false
+                }
+            },
+            status: 'waiting'
         },
         content: 'game',
         //***************test
-        ready: false,
+        ready: true,
         messages: [],
         chatMessage: '',
         //-------GAME-----------------------
         Game:g,
         roundPlayed: playeds,
-        notification: 'asdasd'
+        notification: 'asdasd',
+        confirm:{
+            show:false,
+            message:'a user disconnected :('
+        }
     },
     methods: {
         enter: function(id) {

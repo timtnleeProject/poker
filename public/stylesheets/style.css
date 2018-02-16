@@ -93,6 +93,11 @@ button:focus{
 .re{
 	position: relative;
 } 
+.vh-center{
+	top:50%;
+	left: 50%;
+	transform: translate(-50%,-50%);
+}
 .v-center{
 	top:50%;
 	transform: translateY(-50%);
@@ -116,6 +121,11 @@ button:focus{
 .warning{
 	font-weight: bold;
 	color: red;
+}
+.link {
+	color: lightskyblue;
+	cursor: pointer;
+	text-decoration: underline;
 }
 .btn{
   cursor:pointer;
@@ -150,6 +160,24 @@ button:focus{
 .btn-dark:hover{
   background-color:rgba(0,0,0,0.3);
   border-color: rgba(0,0,0,0.3);
+}
+.btn-warn{
+ background-color: rgba(174,0,0,0.7);
+  border:1px solid rgba(174,0,0,0.7);
+  color:white;
+}
+.btn-warn:hover{
+  background-color:white;
+  color:rgba(174,0,0,0.7);
+}
+.btn-success{
+  background-color: rgba(0,219,0,0.7);
+  border:1px solid rgba(0,219,0,0.7);
+  color:white;
+}
+.btn-success:hover{
+  background-color:white;
+  color:rgba(0,219,0,0.7);
 }
 .nav-btn{
   color: inherit;

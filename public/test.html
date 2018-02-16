@@ -15,8 +15,23 @@
 </head>
 
 <body>
-    <div id="app" class="content">
-        <p>user: {{user}}</p>
+    <header class="mainheader">
+        <div class="title">
+            <a class="nav-btn" href="/">HEARTS</a></div>
+        <% if(session.userName){%>
+            <div class="side nav-btn">
+                <%= session.userName %>
+            </div>
+            <div class="side">
+                <a class="nav-btn" href="/signout">Sign out</a>
+            </div>
+            <% }else{%>
+                <div class="side">
+                    <a class="nav-btn" href="/login">Login</a>
+                </div>
+                <% }%>
+    </header>
+    <div id="app" class="content re">
         <template v-if="content==='lobby'">
             <h1>LOBBY</h1>
             <form>
@@ -41,26 +56,45 @@
             </div>
         </template>
         <template v-else-if="content==='room'">
-            <button v-on:click="leaveRoom()">Leave Room</button>
-            <div>You are now in : {{atRoom.name}}</div>
-            <p>待所有人準備遊戲即開始</p>
-            <button v-on:click="getReady" v-bind:class={ready:ready,waiting:!ready}>Ready:{{ready}}</button>
-            <div>
-                <span v-for="m in atRoom.members">{{m}} / </span>
+            <div class="container-center inroom">
+                <div>You are now in room : {{atRoom.name}}</div>
+                <button class="btn btn-default" v-on:click="leaveRoom()">Leave Room</button>
+                <p>Game will start when everyone is ready</p>
+                <button v-on:click="getReady" class="btn ready" v-bind:class="(ready)?'btn-success':'btn-warn'">{{(ready)?'Ready':'Not Ready'}}</button>
+                <div class="member-list">
+                    <div v-for="m in atRoom.members">
+                        <p>{{m.name}}</p>
+                        <p v-if="m.status" class="green">Ready</p>
+                        <p v-else class="red">Waiting</p>
+                    </div>
+                </div>
             </div>
         </template>
         <template v-else-if="content==='game'">
-           <!--  <div>You are now in : {{atRoom.name}}</div>
+            <!--  <div>You are now in : {{atRoom.name}}</div>
             <p>GAME</p> -->
             <div class="table">
+                <div class="name-card name-card-0"><small>名字最長可已取到十二個字</small></div>
+                <div class="name-card name-card-1"><small>名字最長可已取到十二個字</small></div>
+                <div class="name-card name-card-2"><small>名字最長可已取到十二個字</small></div>
+                <div class="name-card name-card-3"><small>名字最長可已取到十二個字</small></div>
                 <div class="played" v-for="(played,index) in roundPlayed_game" v-bind:class="'played-'+played.index">
                     <img v-bind:src="'images/cards/'+played.card.index+'.jpg'">
                 </div>
                 <div class="ontable" v-for="(p,index) in members_game" v-bind:class="'ontable-'+index">
-                    <div class="card" v-for="card in p.ontable" >
+                    <div class="card" v-for="card in p.ontable">
                         <img v-bind:src="'images/cards/'+card.index+'.jpg'">
                     </div>
                 </div>
+                <div class="mark mark-0">
+                    <img src="/images/lobby/icons8-crown-50.png" alt="">
+                </div>
+                <div class="mark mark-1">
+                    <img src="/images/lobby/icons8-crown-50.png" alt="">
+                </div>
+                <div class="mark mark-2"></div>
+                <div class="mark mark-3"></div>
+                <div id="countDown" class="ab vh-center">10</div>
             </div>
             <!-- <div v-for="p in members_game">
                 {{p.name}}:{{p.onhand.length}}張牌
@@ -72,13 +106,21 @@
                 </div>
             </div>
             <div id="board">
-                    <p>分數</p>
-                    <small>第{{Game.set}}局</small>
-                    <table>
-                        <tr v-for="p in members_game"><td>{{p.name}}</td><td>:</td><td> {{p.score}}</td></tr>
-                    </table>                    
-                </div>
+                <p>分數</p>
+                <small>第{{Game.set}}局</small>
+                <table>
+                    <tr v-for="p in members_game">
+                        <td>{{p.name}}</td>
+                        <td>:</td>
+                        <td> {{p.score}}</td>
+                    </tr>
+                </table>
+            </div>
             <div id="notification" animate="fade" class="v-center">{{notification}}</div>
+            <div id="confirm" v-if="confirm.show">
+                <h4>{{confirm.message}}</h4>
+                <button class="btn btn-default">Back To Room</button>
+            </div>
         </template>
         <template v-if="content==='room'||content==='game'">
             <div class="chat-pos">

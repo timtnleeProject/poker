@@ -257,16 +257,14 @@ Game.prototype.init = function() {
 Game.prototype.wash = function() {
     debug('wash deck')
     let d = this.deck;    
-    d.shuffling(5)
+    d.cut()
+    d.shuffling(10)
     d.riffle()
     d.cut()
-    d.shuffling(5)
+    d.shuffling(15)
     d.riffle()
     d.cut()
-    d.shuffling(5)
-    d.riffle()
-    d.cut()
-    d.shuffling(5)
+    d.shuffling(10)
     d.riffle()
     d.cut()
 }
@@ -290,8 +288,6 @@ Game.prototype.autoPlay = function(p){
     })
     let card;
     if(sameColor){
-        console.log('sameColor')
-        console.log(this.roundColor)
        card=sameColor;
     } else if(this.isVoid){
         card=p.onhand[0];
@@ -302,7 +298,6 @@ Game.prototype.autoPlay = function(p){
         card=p.onhand.find((c)=>{
             return c.suit!=='heart';
         })
-        console.log(card)
     }
     p.action(card)
 }

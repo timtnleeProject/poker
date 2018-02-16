@@ -31,8 +31,8 @@ socket.on('update room', function(event, room) { //lobby
 socket.on('client room', function(event, arg) {
     switch (event) {
         case 'join':
-            app.atRoom = arg;
-            if (app.content !== 'room') { //the one who join
+            app.atRoom = arg.room;
+            if (app.userId === arg.user) { //the one who join
                 app.content = 'room'
             }
             app.messages.push({ name: 'note', mes: 'a user enter the room', style: 'note' })
@@ -58,18 +58,16 @@ socket.on('client room', function(event, arg) {
             app.Game = arg;
             break;
         case 'leave game':
-            if (app.content !== 'room')
-                app.content = 'room';
+            app.confirm.show = true;
+            app.confirm.message = 'a user disconnected :('
             app.ready = false;
             app.atRoom = arg;
-            app.Game = {};
             break;
     }
 })
 socket.on('chat', function(mes) {
-    let style = ['black', 'blue', 'red', 'gray'];
     let index = app.members_room.indexOf(mes.id);
-    mes.style = style[index];
+    mes.style = app.style[index];
     app.messages.push(mes);
 })
 socket.on('reject', function(e) {
@@ -79,10 +77,13 @@ socket.on('reject', function(e) {
 socket.on('card event', function(name, arg) {
     switch (name) {
         case 'start':
+            app.confirm.show = false;
             app.Game=arg;
             break;
         case 'play':
             document.getElementById('sound-play').play()
+            if(app.countDown.show)
+                app.countDown.show=false;
             app.Game.players.find(function(p, i) {
                 if (p.index === arg.player.index)
                     Vue.set(app.Game.players, i, arg.player)
@@ -97,8 +98,20 @@ socket.on('card event', function(name, arg) {
         case 'set':
             Vue.set(app.Game, 'players', arg);
             break;
+        case 'game end':
+            app.confirm.show = true;
+            app.confirm.final = true;
+            app.ready = false;
+            app.confirm.message = 'Game End'
+            app.atRoom = arg;
+            break;
         case 'notification':
             notificate(arg)
+            break;
+        case 'countDown':
+            document.getElementById('sound-count').play()
+            app.countDown.show=true;
+            app.countDown.count=arg;
             break;
     }
 })
@@ -152,7 +165,20 @@ var app = new Vue({
         chatMessage: '',
         //-------GAME-----------------------
         Game: {},
-        notification: ''
+        notification: '',
+        confirm:{
+            show:false,
+            message:'',
+            final:false
+        },
+        countDown:{
+            show:false,
+            count:0
+        },
+        setting:{
+            mute:0.6
+        },
+        style:['black', 'blue', 'red', 'gray']
     },
     methods: {
         enter: function(id) {
@@ -183,6 +209,13 @@ var app = new Vue({
         leaveRoom: function() {
             socket.emit('room event', 'leave', this.atRoom.id)
         },
+        backToRoom: function(){ //reset Data
+            this.Game = {};
+            this.content = 'room';
+            this.confirm.show=false;
+            this.confirm.final = false;
+            this.countDown.show = false;
+        },
         sendMes: function(e) {
             e.preventDefault()
             if (this.chatMessage.trim() === '')
@@ -202,6 +235,14 @@ var app = new Vue({
                 socket.emit('action', card)
             else
                 notificate('Not your turn')
+        },
+        sound:function(){
+            if(this.setting.mute)
+                this.setting.mute=0;
+            else
+                this.setting.mute=0.6;
+            document.getElementById('sound-count').volume = this.setting.mute;
+            document.getElementById('sound-play').volume = this.setting.mute;
         }
     },
     computed: {
@@ -218,7 +259,6 @@ var app = new Vue({
         members_notactive : function(){
             var ary = [];
             this.members_lob.forEach(function(m){
-                console.log(m)
                 ary.push(m<4)
             })
             return ary
@@ -246,13 +286,20 @@ var app = new Vue({
         },
         activePlayer: function() {
             let active;
-            if (this.Game.players) {
-                active = this.Game.players.find(function(p) {
-                    return p.status === 'play';
+            let index=88;
+            if (this.members_game) {
+                active = this.members_game.find(function(p,i) {
+                    if(p.status === 'play'){
+                        index=i;
+                        return true
+                    }
+                    return false;
                 })
             }
-            if (active)
+            if (active!==undefined){
+                active.reindex = index;
                 return active
+            }
             else
                 return '---'
         },

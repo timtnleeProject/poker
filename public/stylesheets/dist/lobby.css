@@ -87,7 +87,7 @@
 	left: 0;
 	background-color: rgba(200,200,200,0.8);
 }
-/*----------------chat------------------*/
+/*----------------chat/ in room------------------*/
 .chat-pos{
 	pointer-events: none;
 	width: 360px;
@@ -97,12 +97,12 @@
 }
 .chat{	
 	pointer-events: none;
-	background-color: rgba(33,149,128,0.2);	
+	background-color: rgba(33,149,128,0.1);	
 	-webkit-box-sizing: border-box;	
 	        box-sizing: border-box;
 	width: 100%;
-	height: 200px;
-	border: 1px solid brown;
+	height: 250px;
+	border: 1px solid lightgray;
 	overflow-y: scroll;
 	overflow-x: hidden;
 	margin-bottom: 5px; 
@@ -133,13 +133,53 @@
 	    -ms-flex-positive: 2;
 	        flex-grow: 2;
 }
-button.waiting{
-	border-color: red;
-	color: red;
+.inroom button{
+	margin-bottom: 10px;
 }
-button.ready{
-	border-color: green;
-	color: green;
+.inroom .ready{
+	padding: 5px;
+}
+.inroom .member-list{
+	padding: 5px;
+	margin: 0 auto 0 auto;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-pack: center;
+	    -ms-flex-pack: center;
+	        justify-content: center;
+	width: 100%;
+	max-width: 1000px;
+}
+.inroom .member-list div{
+	margin: 5px;
+	padding: 10px;
+	font-size: 1.2rem;
+	width: 100%;
+	max-width: 250px;
+	-webkit-box-sizing: border-box;
+	        box-sizing: border-box;
+	border: 1px solid rgba(75, 75, 75, 0.3);
+	-webkit-box-shadow: 1px 1px 1px gray;
+	        box-shadow: 1px 1px 1px gray;
+}
+.inroom .member-list .red{
+	color: rgb(174,0,0);
+}
+.inroom .member-list .green{
+	color:  rgb(0,220,0);
+}
+.inroom .member-list p {
+	margin-bottom: 10px;
+}
+.inroom .col label{
+	color: orange;
+	font-size:1.2rem;
+}
+.inroom .col span{
+	color: gray;
+	font-size:1rem;
+	margin-bottom: 5px;
 }
 .black{
 	color: black;
@@ -170,6 +210,89 @@ button.ready{
 	border: 1px solid black;
 	height: 70vh;
 	position: relative;
+}
+.table .mark{
+	opacity: 0.8;
+	display: none;
+	position: absolute;
+	border-radius: 50%;
+	width: 30px;
+	height: 30px;
+	background-color: red;
+	-webkit-box-shadow: 1px 1px 2px black;
+	        box-shadow: 1px 1px 2px black;
+}
+.table .mark img{
+	width: 20px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-webkit-transform: translate(-50%, -50%);
+	        transform: translate(-50%, -50%)
+}
+.table .mark-0{
+	display: block;
+	top: calc(50% + var(--myWidth2));
+	left:50%;
+	-webkit-transform: translate(-50%,100%);
+	        transform: translate(-50%,100%);
+}
+.table .mark-1{
+	display: block;
+	left: calc(50% + var(--myWidth2));
+	top:50%;
+	-webkit-transform: translate(100%,-50%);
+	        transform: translate(100%,-50%);
+}
+.table .mark-2{
+	display: block;
+	bottom: calc(50% + var(--myWidth2));
+	left:50%;
+	-webkit-transform: translate(-50%,-100%);
+	        transform: translate(-50%,-100%);
+}
+.table .mark-3{
+	display: block;
+	right: calc(50% + var(--myWidth2));
+	top:50%;
+	-webkit-transform: translate(-100%,-50%);
+	        transform: translate(-100%,-50%);
+}
+.table .name-card{
+	text-align: center;
+	font-size: 12px;
+	position: absolute;
+	width: 150px;
+	height: 20px;
+	color: rgba(255,255,255,0.6);
+}
+.table .name-card-0{
+	display: block;
+	top: calc(50% + var(--myWidth2));
+	left:50%;
+	-webkit-transform: translate(-50%,100%);
+	        transform: translate(-50%,100%);
+}
+.table .name-card-1{
+	display: block;
+	left: calc(50% + var(--myWidth2)/2);
+	top:50%;
+	-webkit-transform: translate(0,-50%);
+	        transform: translate(0,-50%);
+}
+.table .name-card-2{
+	display: block;
+	bottom: calc(50% + var(--myWidth2));
+	left:50%;
+	-webkit-transform: translate(-50%,-100%);
+	        transform: translate(-50%,-100%);
+}
+.table .name-card-3{
+	display: block;
+	right: calc(50% + var(--myWidth2)/2);
+	top:50%;
+	-webkit-transform: translate(0,-50%);
+	        transform: translate(0,-50%);
 }
 .table .played{
 	position: absolute;
@@ -285,9 +408,24 @@ button.ready{
 	width: 300px;
 	height: 150px;
 	background-color: rgba(255,255,255,0.6);
-	border: 1px solid gray;
 }#board table{
-	width: 100%;
+	width: 80%;
+}
+.setting{
+	position: fixed;
+	bottom: 5px;
+	right: 5px;
+}
+.setting .on{
+	color: black;
+}
+.setting .off{
+	color: gray;
+}
+#countDown{
+	font-size: 2.1rem;
+	text-shadow: 1px 1px 2px black;
+	color: red;
 }
 #notification{
 	top:30vh;
@@ -313,7 +451,33 @@ button.ready{
     50% {opacity: 1;}
     100% {opacity: 0;}
 }
-
+#confirm {
+	text-align: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(102,179,255,0.9);
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	    -ms-flex-direction: column;
+	        flex-direction: column;
+	-webkit-box-pack: center;
+	    -ms-flex-pack: center;
+	        justify-content: center;
+	-webkit-box-align: center;
+	    -ms-flex-align: center;
+	        align-items: center;
+}#confirm>*{
+	margin-bottom: 20px;
+}#confirm>button{
+	max-width: 100px;
+	padding: 5px;
+}
 /*----------------vue---------------*/
 .fade-enter-active, .fade-leave-active {
   -webkit-transition: opacity .5s;

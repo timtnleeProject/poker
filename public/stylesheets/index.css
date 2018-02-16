@@ -15,7 +15,7 @@
 	max-width: 150px;
 }
 .fancy-btn>.con{
-	transition: transform 1s;
+	transition: transform 0.3s;
 	justify-content: center;
 	display: flex;
 	width: 200%;

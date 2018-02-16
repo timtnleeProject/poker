@@ -20,10 +20,10 @@
 	max-width: 150px;
 }
 .fancy-btn>.con{
-	-webkit-transition: -webkit-transform 1s;
-	transition: -webkit-transform 1s;
-	transition: transform 1s;
-	transition: transform 1s, -webkit-transform 1s;
+	-webkit-transition: -webkit-transform 0.3s;
+	transition: -webkit-transform 0.3s;
+	transition: transform 0.3s;
+	transition: transform 0.3s, -webkit-transform 0.3s;
 	-webkit-box-pack: center;
 	    -ms-flex-pack: center;
 	        justify-content: center;
