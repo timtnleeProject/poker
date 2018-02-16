@@ -234,26 +234,7 @@ function lobby(io) {
                     let startTimer = function(player) {
                         let count = 10;
                         debug('timer: start')
-                        timer = setTimeout(() => { //字動出牌 
-                            if (room.game === undefined)
-                                return undefined;
-                            if (player.status !== 'play') {
-                                debug('timer: wrong, not this player');
-                                return;
-                            }
-                            let mes = player.name + ' overtime. Throw a card automatically.'
-                            lobby.to(id).emit('card event', 'notification', mes)
-                            room.game.autoPlay(player);
-                        }, room.game.timeLimit);
                         timer2 = setTimeout(() => { //提醒
-                            // let player = isPlaying()
-                            // if (player.status !== 'play') {
-                            //     debug('timer: wrong, not this player');
-                            //     return;
-                            // }
-                            // if (players[player.id] === undefined)
-                            //     return;
-                            
                             countDown = setInterval(() => {
                                 if(count<0){
                                     clearTimeout(countDown)
@@ -272,15 +253,21 @@ function lobby(io) {
                                     clearTimeout(countDown)
                                     return;
                                 }
-                                let sessionId = players[player.id].id;
-                                lobby.to(sessionId).emit('card event', 'countDown', count)
-                                count--;
+                                if(count===0){
+                                    let mes = player.name + ' overtime. Throw a card automatically.'
+                                    lobby.to(id).emit('card event', 'notification', mes)
+                                    room.game.autoPlay(player);
+                                } else{
+                                    let sessionId = players[player.id].id;
+                                    lobby.to(sessionId).emit('card event', 'countDown', count)
+                                    count--;
+                                }
                             }, 1000)
-                        }, room.game.timeLimit - 11000)
+                        }, room.game.timeLimit - 10100)
                     }
                     let clearTimer = function() {
                         debug('timer: clear')
-                        clearTimeout(timer);
+                        //clearTimeout(timer);
                         clearTimeout(timer2);
                         clearTimeout(countDown);
                     }

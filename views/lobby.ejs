@@ -9,7 +9,7 @@
 
 <body>
     <% include parts/header %>
-        <div id="app" class="content re">
+        <div id="app" v-bind:class="(content!=='game')?'content':''">
             <template v-if="content==='lobby'">
                 <div class="container-center content">
                     <h1>LOBBY</h1>
@@ -80,6 +80,7 @@
                             <label>Time Limit</label><span>{{atRoom.time}} seconds</span>
                         </div>
                     </div>
+                    <div>members: {{members_room.length}}/4</div>
                     <div class="member-list">
                         <div v-for="m in atRoom.members">
                             <p>{{m.name}}</p>

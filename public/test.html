@@ -31,7 +31,7 @@
                 </div>
                 <% }%>
     </header>
-    <div id="app" class="content re">
+    <div id="app" v-bind:class="(content!=='game')?'content':''">
         <template v-if="content==='lobby'">
             <h1>LOBBY</h1>
             <form>
