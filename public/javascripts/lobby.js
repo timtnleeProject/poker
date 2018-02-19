@@ -67,6 +67,8 @@ socket.on('client room', function(event, arg) {
 })
 socket.on('chat', function(mes) {
     let index = app.members_room.indexOf(mes.id);
+    if(app.setting.chat===false)
+        app.chatMesUnread+=1;
     mes.style = app.style[index];
     app.messages.push(mes);
 })
@@ -161,6 +163,7 @@ var app = new Vue({
         content: 'lobby',
         //***************test
         ready: false,
+        chatMesUnread:0,
         messages: [],
         chatMessage: '',
         //-------GAME-----------------------
@@ -176,9 +179,10 @@ var app = new Vue({
             count:0
         },
         setting:{
+            chat: false,
             mute:0.6
         },
-        style:['black', 'blue', 'red', 'gray']
+        style:['black', 'blue', 'red', 'white']
     },
     methods: {
         enter: function(id) {

@@ -130,12 +130,6 @@
                         <img v-bind:src="'images/cards/'+card.index+'.jpg'">
                     </div>
                 </div>
-                <div class="setting">
-                    <div>sound: 
-                        <span v-if="setting.mute!=0" class="link on" v-on:click="sound">On</span>
-                        <span v-if="setting.mute==0" class="link off" v-on:click="sound">Off</span>
-                    </div>
-                </div>
                 <div id="notification" class="v-center h-center">{{notification}}</div>
                 <div id="confirm" v-if="confirm.show">
                     <h3>{{confirm.message}}</h3>
@@ -146,15 +140,27 @@
                 </div>
             </template>
             <template v-if="content==='room'||content==='game'">
-                <div class="chat-pos">
+                <div class="chat-pos" v-if="setting.chat">
                     <div class="chat" v-bind:myEvent="scroll">
                         <header>Chat</header>
                         <span class="message" v-for="mes in messages" v-bind:class="mes.style">{{mes.name}} : {{mes.mes}}</span>
                     </div>
                     <form class="chat-input">
                         <input type="text" name="chatMessage" v-model:value="chatMessage">
-                        <input type="submit" value="submit" v-on:click="sendMes($event)">
+                        <input type="submit" class="btn btn-default" value="submit" v-on:click="sendMes($event)">
                     </form>
+                </div>
+                <div class="icon-bar">
+                    <div v-on:click="sound">
+                        <img v-if="setting.mute!=0" src="/images/icon/volume.svg.png" alt="">
+                        <img v-if="setting.mute==0" src="/images/icon/mute.svg.png" alt="">
+                    </div>
+                    <div v-on:click="setting.chat=!setting.chat;chatMesUnread=0">
+                        <img src="/images/icon/chat.png " alt=" ">
+                        <div class="chatNum centered-block" v-if="chatMesUnread">
+                            <span>{{chatMesUnread}}</span>
+                        </div>
+                    </div>
                 </div>
             </template>
         </div>

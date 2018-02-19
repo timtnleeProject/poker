@@ -394,10 +394,15 @@ var app = new Vue({
             },
             status: 'waiting'
         },
+        setting:{
+            chat: false,
+            mute:0.6
+        },
         content: 'game',
         //***************test
         ready: true,
         messages: [],
+        chatMesUnread:10,
         chatMessage: '',
         //-------GAME-----------------------
         Game:g,
@@ -439,6 +444,14 @@ var app = new Vue({
         }, //--------------GAME
         action: function(card) {
             socket.emit('action', card)
+        },
+        sound:function(){
+            if(this.setting.mute)
+                this.setting.mute=0;
+            else
+                this.setting.mute=0.6;
+            document.getElementById('sound-count').volume = this.setting.mute;
+            document.getElementById('sound-play').volume = this.setting.mute;
         }
     },
     computed: {

@@ -256,17 +256,16 @@ Game.prototype.init = function() {
 }
 Game.prototype.wash = function() {
     debug('wash deck')
-    let d = this.deck;    
+    let d = this.deck;  
+    d.riffle(7)  
+    d.cut()
+    let random = Math.floor(Math.random*5)+10;
+    d.shuffling(random)
+    d.cut()
+    d.shuffling(10)
     d.cut()
     d.shuffling(10)
     d.riffle()
-    d.cut()
-    d.shuffling(15)
-    d.riffle()
-    d.cut()
-    d.shuffling(10)
-    d.riffle()
-    d.cut()
 }
 Game.prototype.licensing = function() {
     debug('licensing')

@@ -6,6 +6,8 @@
 	display: none;
 }
 .form-2{
+	box-sizing: border-box;
+	border: 1px solid lightgray;
 	width: 100%;
 	margin: 0 auto 0 auto;
 	flex-wrap: wrap;
@@ -71,15 +73,13 @@
 }
 /*----------------chat/ in room------------------*/
 .chat-pos{
-	pointer-events: none;
 	width: 360px;
 	position: fixed;
 	bottom: 5px;
-	left: 5px;
+	left: 40px;
 }
 .chat{	
-	pointer-events: none;
-	background-color: rgba(33,149,128,0.1);	
+	background-color: rgba(33,149,128,0.7);	
 	box-sizing: border-box;
 	width: 100%;
 	height: 250px;
@@ -88,6 +88,7 @@
 	overflow-x: hidden;
 	margin-bottom: 5px; 
 }.chat>span{
+	padding-left: 3px;
 	display: block;
 	word-break: break-all;
 }.chat>header{
@@ -95,7 +96,6 @@
 	padding: 1px;
 }
 .chat-input{
-	pointer-events: auto;
 	width: 100%;
 	display: flex;
 	justify-content: space-around;
@@ -165,7 +165,9 @@
 .gray{
 	color: gray;
 }
-
+.white{
+	color: white;
+}
 /*----------------game------------------*/
 :root{
   --myWidth:4%;/*ontable*/
@@ -346,17 +348,6 @@
 }#board table{
 	width: 80%;
 }
-.setting{
-	position: fixed;
-	bottom: 5px;
-	right: 5px;
-}
-.setting .on{
-	color: black;
-}
-.setting .off{
-	color: gray;
-}
 #countDown{
 	font-size: 2.1rem;
 	text-shadow: 1px 1px 2px black;
@@ -366,7 +357,6 @@
 	top:30vh;
 	opacity: 0;
 	position: fixed;
-	pointer-events: none;
 	width: 100%;
 	background-color: rgba(255,255,255,0.6);
 	padding: 20px;
@@ -397,6 +387,37 @@
 }#confirm>button{
 	max-width: 100px;
 	padding: 5px;
+}
+.icon-bar{
+	height: 300px;
+	position: fixed;
+	bottom: 5px;
+	left: 5px;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+.icon-bar div{
+	position: relative;
+	margin-top: 5px;
+	opacity: 0.8;
+	cursor: pointer;
+	height: 30px;
+}
+.icon-bar div img{
+	height: 100%;
+}
+.icon-bar div .chatNum{
+	opacity: 1;
+	color: black;
+	font-size: 12px;
+	top: -10px;
+	right: -10px;
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background-color: green;
 }
 /*----------------vue---------------*/
 .fade-enter-active, .fade-leave-active {
