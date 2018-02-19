@@ -2,10 +2,13 @@
 	<div class="title">
 		<a class="nav-btn" href="/">HEARTS</a></div>
 	<% if(session.userName){%>	
-		<div class="side nav-btn"><%= session.userName %></div>
+		<div class="side">
+			<a class="nav-btn" href="/lobby">Game</a>
+		</div>
 		<div class="side">
 			<a class="nav-btn" href="/signout">Sign out</a>
 		</div>
+		<div class="side nav-btn"><%= session.userName %></div>
 	<% }else{%>
 		<div class="side">
 			<a class="nav-btn" href="/login">Login</a>

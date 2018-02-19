@@ -14,6 +14,7 @@ small{
 	font-weight: lighter;
 }
 .mainheader {
+	z-index: 1000;
 	text-align: center;
 	color: white;
 	-webkit-transition: -webkit-box-shadow 1s;

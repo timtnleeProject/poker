@@ -41,3 +41,26 @@
 	padding: 1px;
 	font-size: 12px;
 }
+.demo img{
+	opacity: 0.8;
+	width: 100%;
+	height: auto;
+}
+.demo .demo-title{
+	color: rgb(40, 40, 40);
+	text-shadow: 1px 1px rgba(100, 100, 100, 0.7);
+	width: 100%;
+}
+.demo-2{
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+.demo-2 div{
+	min-width: 200px;
+	height: 70px;
+}
+.demo-2 div img{
+	height: 100%;
+}

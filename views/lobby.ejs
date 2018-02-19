@@ -44,7 +44,7 @@
                         <!-- <div>host:{{rooms[key].host}}</div> -->
                         <div>
                             <div>
-                                <label>Members: </label>{{members_lob[index]}}</div>
+                                <label>Members: </label>{{members_lob[index]}}/4</div>
                             <div>
                                 <label>Max Set: </label>{{rooms[key].maxSets}}</div>
                         </div>
@@ -68,7 +68,7 @@
                 <div class="container-center inroom">
                     <h6>You are now in room : {{atRoom.name}}</h6>
                     <button class="btn btn-default" v-on:click="leaveRoom()">Leave Room</button>
-                    <p>Game will start when everyone is ready</p>
+                    <p>Game will start when 4 members are ready</p>
                     <button v-on:click="getReady" class="btn ready" v-bind:class="(ready)?'btn-success':'btn-warn'">{{(ready)?'Ready':'Not Ready'}}</button>
                     <div class="form form-2">
                         <div class="col">
