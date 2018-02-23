@@ -149,6 +149,8 @@
 	-webkit-box-pack: center;
 	    -ms-flex-pack: center;
 	        justify-content: center;
+	-ms-flex-wrap: wrap;
+	    flex-wrap: wrap;
 	width: 100%;
 	max-width: 1000px;
 }
@@ -207,12 +209,25 @@
   --myWidth:4%;/*ontable*/
   --myWidth2:5%;/*played*/
 }
+.card-shadow{
+	-webkit-box-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+	        box-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+.cover-bg{
+	position: fixed;
+	top:0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #172319;
+}
 .table{
 	background: -webkit-gradient(linear, left top, right top, from(#008844),color-stop(#019858), to(#008844));
 	background: linear-gradient(to right, #008844,#019858, #008844);
 	width: 100%;
 	height: 70vh;
 	position: relative;
+	overflow: hidden;
 }
 .table .mark{
 	opacity: 0.8;
@@ -449,7 +464,7 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background-color: rgba(102,179,255,0.9);
+	background-color: rgba(104,154,113,0.9);
 	display: -webkit-box;
 	display: -ms-flexbox;
 	display: flex;
@@ -466,7 +481,7 @@
 }#confirm>*{
 	margin-bottom: 20px;
 }#confirm>button{
-	max-width: 100px;
+	max-width: 150px;
 	padding: 5px;
 }
 .icon-bar{
@@ -490,10 +505,10 @@
 	margin-top: 5px;
 	opacity: 0.8;
 	cursor: pointer;
-	height: 30px;
+	width: 30px;
 }
 .icon-bar div img{
-	height: 100%;
+	width: 100%;
 }
 .icon-bar div .chatNum{
 	opacity: 1;

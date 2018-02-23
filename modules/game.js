@@ -278,7 +278,25 @@ Game.prototype.licensing = function() {
 Game.prototype.findNext = function(p) {
     return this.players[(p.index + 1) % 4];
 }
-Game.prototype.autoPlay = function(p){
+Game.prototype._roundEnd = function() {
+    this.round++;
+    this.inRound = 0;
+    this.roundPlayed = [];
+}
+Game.prototype._invalid = function(e) {
+    debug(e)
+    if (this.invalid)
+        this.invalid()
+}
+//hearts
+function Hearts(arg){
+    Game.call(this,arg)
+}
+
+Hearts.prototype = Object.create(Game.prototype);
+Hearts.prototype.constructor = Hearts;
+
+Hearts.prototype.autoPlay = function(p){
     let sameColor=p.onhand.find((c)=>{
         return c.suit===this.roundColor;
     })
@@ -300,7 +318,7 @@ Game.prototype.autoPlay = function(p){
     }
     p.action(card)
 }
-Game.prototype._action = function(p, card) {
+Hearts.prototype._action = function(p, card) {
     p.play(card)
     p.status = 'wait'
     this.roundPlayed.push({
@@ -313,12 +331,7 @@ Game.prototype._action = function(p, card) {
     if (this.inRound !== 4)
         this.findNext(p).status = 'play';
 }
-Game.prototype._roundEnd = function() {
-    this.round++;
-    this.inRound = 0;
-    this.roundPlayed = [];
-}
-Game.prototype._setEnd = function() {
+Hearts.prototype._setEnd = function() {
     this.players.forEach((player) => { //計分
         let score = 0;
         let score_length = 0;
@@ -379,11 +392,6 @@ Game.prototype._setEnd = function() {
         p.ontable = [];
     })
 }
-Game.prototype._invalid = function(e) {
-    debug(e)
-    if (this.invalid)
-        this.invalid()
-}
 // let d = new Deck()
 // let p = new Player('tim', 0)
 // debug(d)
@@ -429,6 +437,8 @@ Game.prototype._invalid = function(e) {
 //     g.start()
 //     players[0].status = 'play'
 // }
-exports.Game = Game;
-exports.Player = Player;
-exports.Card = Card;
+exports.Hearts = {
+    Game:Hearts,
+    Player:Player,
+    Card:Card
+}

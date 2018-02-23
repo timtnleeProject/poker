@@ -2,9 +2,8 @@ const socket = require('socket.io');
 const io_session = require('express-socket.io-session');
 const debug = require('debug')('poker:io');
 const getId = require('./modules/random');
-const Game = require('./modules/game').Game;
-const Player = require('./modules/game').Player;
-const record = require('./modules/record')
+const record = require('./modules/record');
+const gameController = require('./modules/gameController');
 let mode = process.env.NODE_ENV;
 let disableSameDevice = process.env.device;
 let session_middleware;
@@ -74,6 +73,12 @@ function createIo(server, session) {
 
 function lobby(io) {
     let lobby = io.of('/lobby');
+    gameController.init({
+        rooms: rooms,
+        players: players,
+        socketIo: lobby,
+        leaveGame: leaveGame
+    })
     lobby.use(session_middleware);
     lobby.use((socket, next) => { //record users//denied same connection//authorize
         let user = socket.handshake.session.userId;
@@ -145,7 +150,8 @@ function lobby(io) {
                         status: 'waiting',
                         maxScore: arg.maxScore,
                         time: arg.time,
-                        maxSets: arg.maxSets
+                        maxSets: arg.maxSets,
+                        type: 'hearts'
                     };
                     newRoom.members[user] = { // new member
                         id: user,
@@ -165,6 +171,11 @@ function lobby(io) {
                 let theRoom = rooms[id];
                 if (theRoom === undefined)
                     return;
+                if(players[user].atRoom){
+                    socket.emit('reject', 'You already in a room.');
+                    leaveRoom(user, socket, true)
+                    return;
+                }
                 if (Object.keys(theRoom.members).length === 4) { //room is full
                     socket.emit('reject', 'The room is full.');
                     return;
@@ -198,6 +209,7 @@ function lobby(io) {
                 lobby.to(id).emit('client room', 'status', room.members[_user]);
                 if (Object.keys(room.members).length !== 4)
                     return;
+
                 let allReady = true;
                 for (let i in room.members) {
                     if (room.members[i].status !== true) {
@@ -207,179 +219,10 @@ function lobby(io) {
                 }
                 if (allReady) { //to game
                     room.status = 'playing';
-                    lobby.emit('update room', 'join', room)
-                    room.game = new Game({
-                        maxSets: room.maxSets,
-                        maxScore: room.maxScore,
-                        timeLimit: room.time
-                    })
-                    for (let i in room.members) {
-                        //let member = room.members[i];
-                        let p = new Player({ name: room.members[i].name, id: room.members[i].id });
-                        //players[i].player = ;
-                        p.invalid = (e) => {
-                            lobby.to(players[i].id).emit('card event', 'notification', e)
-                        }
-                        players[i].player = p;
-                        //member.player = players[i].player;
-                        room.game.join(players[i].player);
-                    }
-                    //timer
-                    let timer;
-                    let timer2;
-                    let countDown;
-                    // let isPlaying = () => room.game.players.find((p) => {
-                    //     return p.status === 'play'
-                    // })
-                    let startTimer = function(player) {
-                        let count = 10;
-                        debug('timer: start')
-                        timer2 = setTimeout(() => { //提醒
-                            countDown = setInterval(() => {
-                                if(count<0){
-                                    clearTimeout(countDown)
-                                    return
-                                }
-                                if(!room.game){
-                                    clearTimeout(countDown)
-                                    return
-                                }
-                                if (player.status !== 'play') {
-                                    debug('timer: wrong, not this player');
-                                    clearTimeout(countDown)
-                                    return;
-                                }
-                                if (players[player.id] === undefined){
-                                    clearTimeout(countDown)
-                                    return;
-                                }
-                                if(count===0){
-                                    let mes = player.name + ' overtime. Throw a card automatically.'
-                                    lobby.to(id).emit('card event', 'notification', mes)
-                                    room.game.autoPlay(player);
-                                } else{
-                                    let sessionId = players[player.id].id;
-                                    lobby.to(sessionId).emit('card event', 'countDown', count)
-                                    count--;
-                                }
-                            }, 1000)
-                        }, room.game.timeLimit - 10100)
-                    }
-                    let clearTimer = function() {
-                        debug('timer: clear')
-                        //clearTimeout(timer);
-                        clearTimeout(timer2);
-                        clearTimeout(countDown);
-                    }
-                    room.game.init();
-                    room.game.start = () => {
-                        room.game.wash()
-                        room.game.licensing()
-                        if (room.game.set === 0)
-                            room.game.players[0].status = 'play';
-                        lobby.to(id).emit('card event', 'start', room.game)
-                        startTimer(room.game.players[0]);
-                    }
-                    room.game.actionReject = (p, mes) => { //to one
-                        debug('gamer action reject')
-                        let pid = p.id;
-                        let socketid = players[pid].id;
-                        lobby.to(socketid).emit('card event', 'notification', mes)
-                    }
-                    room.game.actionValid = function(p, c) {
-                        let validate = true
-                        if (this.inRound === 0) { //第一個出 缺門才能出愛心 //或是只剩愛心
-                            if (c.suit === 'heart' && !this.isVoid) {
-                                let found = p.onhand.find((c) => {
-                                    return c.suit !== 'heart';
-                                })
-                                if (found)
-                                    validate = "Can't play Hearts now."
-                            }
-                        } else { //跟著出 缺門才能丟其他花色
-                            if (c.suit != this.roundColor) {
-                                let found = p.onhand.find((c) => {
-                                    return c.suit === this.roundColor
-                                })
-                                if (found)
-                                    validate = "You still have " + this.roundColor;
-                                else if (c.suit === 'heart' && !this.isVoid)
-                                    this.isVoid = true;
-                            }
-                        }
-                        return validate
-                    }
-                    room.game.action = (p, c) => { //after ._action
-                        lobby.to(id).emit('card event', 'play', { player: p, game: room.game })
-                        clearTimer()
-                        if (room.game.inRound !== 4)
-                            startTimer(room.game.findNext(p))
-                    }
-                    room.game.roundDelay = 1800;
-                    room.game.roundEnd = function() { //before ._roundEnd
-                        return new Promise((resolve, reject) => {
-                            this.roundPlayed.sort(($a, $b) => {
-                                let a = $a.card;
-                                let b = $b.card;
-                                let ac = (a.suit === this.roundColor) ? 1 : 0;
-                                let bc = (b.suit === this.roundColor) ? 1 : 0;
-                                return b.index * bc - a.index * ac
-                            })
+                    lobby.emit('update room', 'join', room);
 
-                            let biggest = this.roundPlayed[0];
-                            lobby.to(id).emit('card event', 'notification', biggest.player.name + ' eats this round');
-                            this.roundPlayed.forEach((played) => {
-                                if (played.card.role !== 'normal')
-                                    biggest.player.ontable.push(played.card)
-                            })
-                            setTimeout(() => {
-                                debug('round end')
-                                if (biggest.player.onhand.length !== 0)
-                                    biggest.player.status = 'play';
-                                lobby.to(id).emit('card event', 'round', room.game.players)
-                                startTimer(biggest.player)
-                                resolve()
-                            }, room.game.roundDelay)
-                        })
-                    }
-                    room.game.isEnd = function() {
-                        if (this.set == this.maxSets)
-                            return true;
-                        let player = this.players.find((p) => {
-                            return p.score >= this.maxScore || p.score <= this.maxScore * -1;
-                        })
-                        if (player)
-                            return true
-                        else
-                            return false;
-                    }
-                    room.game.setDelay = 2000;
-                    room.game.setEnd = function() { //after._setEnd()
-                        if (!this.isEnd()) {
-                            debug('set end')
-                            setTimeout(() => {
-                                lobby.to(id).emit('card event', 'notification', 'set' + (this.set + 1) + ' start');
-                                debug('start')
-                                room.game.start() //這裡更新分數
-                            }, room.game.setDelay)
-                            // lobby.to(id).emit('card event', 'set', room.game.players)
-                        } else {
-                            room.game.players.sort((a, b) => {
-                                return b.score - a.score
-                            })
-                            setTimeout(() => {
-                                lobby.to(id).emit('card event', 'start', room.game)
-                                leaveGame(id);
-                                lobby.to(id).emit('card event', 'game end', room);
-                            }, room.game.setDelay)
-                        }
-                    }
-                    room.game.start()
-                    // for (let i in room.members) {
-                    //     let id = players[i].id;
-                    //     lobby.to(id).emit('card event', 'start', players[i].player.onhand)
-                    // }
-                    lobby.to(id).emit('client room', 'start game', room.game)
+                    let type = room.type;
+                    gameController.hearts(id);
                 }
             }
         })

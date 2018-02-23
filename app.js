@@ -7,7 +7,9 @@ const bodyParser = require('body-parser');
 const debug = require('debug')('poker:app')
 const random = require('./modules/random');
 const record = require('./modules/record');
-const session = require('express-session')({
+
+let sessionDb = process.env.DATABASE_URL;
+let sessionOptions = {
     secret: 'zxcvfdsaqwer', //secret的值建议使用随机字符串
     resave: false,
     saveUninitialized: false,
@@ -15,7 +17,12 @@ const session = require('express-session')({
         //secure: true//for https 
         maxAge: 1000 * 60 * 10
     }
-});
+}
+if(sessionDb){
+    // use heroku db to store session
+    // sessionOptions.store = ...
+}
+const session = require('express-session')(sessionOptions);
 
 const index = require('./routes/index');
 const con = require('./routes/connect');

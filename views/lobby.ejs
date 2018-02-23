@@ -91,6 +91,7 @@
                 </div>
             </template>
             <template v-else-if="content==='game'">
+                <div class="cover-bg"></div>
                 <!-- <div>You are now in : {{atRoom.name}}</div>
                 <p>GAME</p> -->
                 <div class="table">
@@ -98,11 +99,11 @@
                         {{p.name}}
                     </div>
                     <div class="played" v-for="(played,index) in roundPlayed_game" v-bind:class="'played-'+played.index">
-                        <img v-bind:src="'images/cards/'+played.card.index+'.jpg'">
+                        <img class="card-shadow" v-bind:src="'images/cards/'+played.card.index+'.jpg'">
                     </div>
                     <div class="ontable" v-for="(p,index) in members_game" v-bind:class="'ontable-'+index">
                         <div class="card" v-for="card in p.ontable">
-                            <img v-bind:src="'images/cards/'+card.index+'.jpg'">
+                            <img class="card-shadow" v-bind:src="'images/cards/'+card.index+'.jpg'">
                         </div>
                     </div>
                     <div class="mark" v-bind:class="'mark-'+activePlayer.reindex">
@@ -127,7 +128,7 @@
                 </div> -->
                 <div class="onhand">
                     <div class='card' v-for="(card,index) in members_game[0].onhand" v-on:click='action(card)'>
-                        <img v-bind:src="'images/cards/'+card.index+'.jpg'">
+                        <img class="card-shadow" v-bind:src="'images/cards/'+card.index+'.jpg'">
                     </div>
                 </div>
                 <div id="notification" class="v-center h-center">{{notification}}</div>
@@ -152,8 +153,8 @@
                 </div>
                 <div class="icon-bar">
                     <div v-on:click="sound">
-                        <img v-if="setting.mute!=0" src="/images/icon/volume.svg.png" alt="">
-                        <img v-if="setting.mute==0" src="/images/icon/mute.svg.png" alt="">
+                        <img v-if="setting.mute!=0" src="/images/icon/volume-128.png" alt="">
+                        <img v-if="setting.mute==0" src="/images/icon/mute-128.png" alt="">
                     </div>
                     <div v-on:click="setting.chat=!setting.chat;chatMesUnread=0">
                         <img src="/images/icon/chat.png " alt=" ">

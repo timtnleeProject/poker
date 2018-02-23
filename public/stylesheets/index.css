@@ -1,13 +1,50 @@
-.container-center{
+.container-center, .full{
 	text-align: center;
 	display: flex;
 	flex-direction: column;
+}
+.full{
+	justify-content: center;
+}
+.wallpaper{
+	opacity: 0.9;
+	background-color: black;
+	position: relative;
+	width: 100%;
+	max-width: 1140px;
+	left: 50%;
+	transform: translateX(-50%);
+}
+.sec-1{
+	overflow: hidden;
+	background-color: black;
+	position: relative;
+	width: 100%;
+	color: white;
+}
+
+.sec-1 .demo{
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	text-align: center;
+	width: 100%;
+}
+.sec-2{
+	padding: 10px;
+}
+.sec-3{
+	padding: 10px;
+	background-color: #172319;
+	color:white;
+	text-shadow: 1px 1px 1px black;
 }
 #title{
 	color: red;
 	text-shadow: 1px 1px 1px black;
 }
 .fancy-btn{
+	display: block;
 	border-radius: 3px;
 	padding: 10px;
 	overflow: hidden;
@@ -21,7 +58,7 @@
 	width: 200%;
 }
 .fancy-btn:hover>.con{
-	transform: translateX(-50%);
+	transform: translate(-50%,0);
 }
 .fancy-btn>.con>*{
 	width: 50%;
@@ -63,4 +100,7 @@
 }
 .demo-2 div img{
 	height: 100%;
+}
+.loginform label{
+	margin-bottom: 5px;
 }
