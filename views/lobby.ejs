@@ -153,11 +153,18 @@
                 </div>
                 <div class="icon-bar">
                     <div v-on:click="sound">
-                        <img v-if="setting.mute!=0" src="/images/icon/volume-128.png" alt="">
-                        <img v-if="setting.mute==0" src="/images/icon/mute-128.png" alt="">
+                        <div v-if="content==='room'">
+                            <img v-if="setting.mute!=0" src="/images/icon/volume-dark-128.png" alt="">
+                            <img v-if="setting.mute==0" src="/images/icon/mute-dark-128.png" alt="">
+                        </div>
+                        <div v-if="content==='game'">
+                            <img v-if="setting.mute!=0" src="/images/icon/volume-128.png" alt="">
+                            <img v-if="setting.mute==0" src="/images/icon/mute-128.png" alt="">
+                        </div>
                     </div>
                     <div v-on:click="setting.chat=!setting.chat;chatMesUnread=0">
-                        <img src="/images/icon/chat.png " alt=" ">
+                        <img v-if="content==='room'" src="/images/icon/chat-dark.png " alt=" ">
+                        <img v-if="content==='game'" src="/images/icon/chat.png " alt=" ">
                         <div class="chatNum centered-block" v-if="chatMesUnread">
                             <span>{{chatMesUnread}}</span>
                         </div>

@@ -95,8 +95,9 @@ function lobby(io) {
                     leaveRoom(user)
                     socket.emit('client room', 'leave')
                 }
-                delete players[user];
                 socket._err = 'You have been connected on this device. All your connections will be closed.';
+                lobby.to(players[user].socketId).emit('denied', socket._err);
+                delete players[user];
             }
         } else if (user === undefined) {
             //debug('no session')
@@ -105,7 +106,8 @@ function lobby(io) {
             return;
         } else {
             players[user] = {
-                name: name
+                name: name,
+                socketId: socket.id
             };
             //***************************************test
             // players[user] = {
