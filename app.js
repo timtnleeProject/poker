@@ -22,13 +22,40 @@ if(sessionDb){
     // use heroku db to store session
     // sessionOptions.store = ...
 }
-const session = require('express-session')(sessionOptions);
+//const session = require('express-session')(sessionOptions);
 
 const index = require('./routes/index');
 const con = require('./routes/connect');
 
 const app = express();
-
+//test db
+const pg = require('pg')
+  , session = require('express-session')
+  , pgSession = require('connect-pg-simple')(session);
+ 
+const pgPool = new pg.Pool({
+    // Insert pool options here 
+    host:'127.0.0.1',
+    database:'test',
+    port:5432,
+    user:'postgres',
+    password:'tim111'
+});
+ 
+app.use(session({
+  store: new pgSession({
+    pool : pgPool,                // Connection pool 
+    tableName : 'user_sessions'   // Use another table-name than the default "session" one 
+  }),
+  secret: 'zxcvfdsaqwer', //secret的值建议使用随机字符串
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        //secure: true//for https 
+        maxAge: 1000 * 60 * 10
+    }
+}));
+//----------------
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -39,7 +66,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(session);
+//app.use(session);
 app.use(express.static(path.join(__dirname, 'public')));
 //****render var
 app.use((req,res,next)=>{
