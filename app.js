@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const debug = require('debug')('poker:app')
 const random = require('./modules/random');
 const record = require('./modules/record');
+const session = require('express-session')
 
 let sessionDb = process.env.DATABASE_URL;
 let sessionOptions = {
@@ -18,43 +19,25 @@ let sessionOptions = {
         maxAge: 1000 * 60 * 10
     }
 }
-if(sessionDb){
+if (sessionDb) {
     // use heroku db to store session
     // sessionOptions.store = ...
+    const pg = require('pg'),
+        pgSession = require('connect-pg-simple')(session);
+    const pool = new pg.Pool({
+        connectionString: sessionDb,
+        ssl: true
+    })
+    sessionOptions.store = new pgSession({
+        pool: pool,
+        tableName: 'user_sessions'
+    })
 }
-//const session = require('express-session')(sessionOptions);
 
 const index = require('./routes/index');
 const con = require('./routes/connect');
 
 const app = express();
-//test db
-const pg = require('pg')
-  , session = require('express-session')
-  , pgSession = require('connect-pg-simple')(session);
- 
-const pgPool = new pg.Pool({
-    // Insert pool options here 
-    host:'127.0.0.1',
-    database:'test',
-    port:5432,
-    user:'postgres',
-    password:'tim111'
-});
- 
-app.use(session({
-  store: new pgSession({
-    pool : pgPool,                // Connection pool 
-    tableName : 'user_sessions'   // Use another table-name than the default "session" one 
-  }),
-  secret: 'zxcvfdsaqwer', //secret的值建议使用随机字符串
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        //secure: true//for https 
-        maxAge: 1000 * 60 * 10
-    }
-}));
 //----------------
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -66,54 +49,54 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-//app.use(session);
+app.use(session(sessionOptions));
 app.use(express.static(path.join(__dirname, 'public')));
 //****render var
-app.use((req,res,next)=>{
+app.use((req, res, next) => {
     res.locals.session = req.session;
     next()
 })
 //*******
 app.use('/', index);
 //***************test*********************
-app.get('/test/sessionId',(req,res)=>{
+app.get('/test/sessionId', (req, res) => {
     res.end(JSON.stringify(record.sessionId))
 })
 //****test
 let disableSameDevice = process.env.device;
 let logindev = process.env.logindev;
 //certificate
-app.use((req,res,next)=>{
-    if(logindev=='yes'){
+app.use((req, res, next) => {
+    if (logindev == 'yes') {
         debug('test: auto login')
-        req.session.userName ='developer'
+        req.session.userName = 'developer'
         next();
         return
     }
-    if(req.session.userName)
-            next();
+    if (req.session.userName)
+        next();
     else
-       res.redirect('/login')    
+        res.redirect('/login')
 })
 app.use((req, res, next) => {
-    let asignId = ()=>{
+    let asignId = () => {
         random(7, record.sessionId).then((id) => {
             req.session.userId = id;
             next()
         })
     }
-    if(disableSameDevice=='yes'){
+    if (disableSameDevice == 'yes') {
         console.log(req.session.userId)
-        if (req.session.userId ) {
+        if (req.session.userId) {
             // record.sessionId[req.session.userId] = {};
             next();
         } else {
             asignId()
         }
-    } else{
+    } else {
         asignId()
     }
-    
+
 })
 app.use('/', con);
 // catch 404 and forward to error handler
