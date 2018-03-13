@@ -19,20 +19,43 @@ let sessionOptions = {
         maxAge: 1000 * 60 * 10
     }
 }
+
+// use heroku db to store session
+// sessionOptions.store = ...
+
+const pg = require('pg'),
+    pgSession = require('connect-pg-simple')(session);
+const poolOptions = {};
 if (sessionDb) {
-    // use heroku db to store session
-    // sessionOptions.store = ...
-    const pg = require('pg'),
-        pgSession = require('connect-pg-simple')(session);
-    const pool = new pg.Pool({
-        connectionString: sessionDb,
-        ssl: true
-    })
-    sessionOptions.store = new pgSession({
-        pool: pool,
-        tableName: 'user_sessions'
-    })
+    poolOptions.connectionString = sessionDb;
+    poolOptions.ssl = true;
+} else {
+    //poolOptions.connectionString ='http://127.0.0.1:5432';
+    poolOptions.hostname = 'http://127.0.0.1'
+    poolOptions.port = 5432
+    poolOptions.user = 'postgres'
+    poolOptions.password = 'tim111'
+    poolOptions.database = 'test'
 }
+const pool = new pg.Pool(poolOptions)
+pool.query('SELECT * from user_sessions')
+    .then((res) => {
+        console.log('success!')
+    })
+    .catch(err => {
+        console.log('err!')
+        pool.query('CREATE TABLE "user_sessions" (\
+        "sid" varchar NOT NULL COLLATE "default",\
+        "sess" json NOT NULL,\
+        "expire" timestamp(6) NOT NULL)')
+            .then(res => {
+                console.log('done')
+            })
+    })
+sessionOptions.store = new pgSession({
+    pool: pool,
+    tableName: 'user_sessions'
+})
 
 const index = require('./routes/index');
 const con = require('./routes/connect');
