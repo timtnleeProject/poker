@@ -10,22 +10,12 @@ const record = require('./modules/record');
 const session = require('express-session')
 
 let sessionDb = process.env.DATABASE_URL;
-let sessionOptions = {
-    secret: 'zxcvfdsaqwer', //secret的值建议使用随机字符串
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        //secure: true//for https 
-        maxAge: 1000 * 60 * 10
-    }
-}
-
 // use heroku db to store session
 // sessionOptions.store = ...
-
 const pg = require('pg'),
-    pgSession = require('connect-pg-simple')(session);
-const poolOptions = {};
+    pgSession = require('connect-pg-simple')(session),
+    poolOptions = {};
+
 if (sessionDb) {
     poolOptions.connectionString = sessionDb;
     poolOptions.ssl = true;
@@ -52,11 +42,20 @@ pool.query('SELECT * from user_sessions')
                 console.log('done')
             })
     })
-sessionOptions.store = new pgSession({
-    pool: pool,
-    tableName: 'user_sessions'
-})
-
+let sessionOptions = {
+    // store: new pgSession({
+    //     pool: pool,
+    //     tableName: 'user_sessions'
+    // }),
+    secret: 'zxcvfdsaqwer', //secret的值建议使用随机字符串
+    resave: true,
+    saveUninitialized: true,
+    cookie: {
+        //secure: true//for https 
+        maxAge: 1000 * 60 * 10
+    }
+}
+const sessionMiddleware = session(sessionOptions)
 const index = require('./routes/index');
 const con = require('./routes/connect');
 
@@ -72,7 +71,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(session(sessionOptions));
+app.use(sessionMiddleware);
 app.use(express.static(path.join(__dirname, 'public')));
 //****render var
 app.use((req, res, next) => {
@@ -141,4 +140,4 @@ app.use(function(err, req, res, next) {
 });
 
 exports.app = app;
-exports.session = session;
+exports.session = sessionMiddleware;

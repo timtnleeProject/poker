@@ -173,7 +173,7 @@ function lobby(io) {
                 let theRoom = rooms[id];
                 if (theRoom === undefined)
                     return;
-                if(players[user].atRoom){
+                if (players[user].atRoom) {
                     socket.emit('reject', 'You already in a room.');
                     leaveRoom(user, socket, true)
                     return;
