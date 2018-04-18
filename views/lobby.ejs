@@ -25,7 +25,7 @@
                         <div class="col">
                             <label title="Maximun Sets of Game">Max Sets</label>
                             <input type="number" v-model="roomSetting.maxSets" value="10" min="1" max="99">
-                            <label v-bind:title="'When score reach &plusmn '+roomSetting.maxScore+' game end.'">&plusmn Score</label>
+                            <label v-bind:title="'When score reach &plusmn; '+roomSetting.maxScore+' game end.'">&plusmn; Score</label>
                             <input type="number" v-model="roomSetting.maxScore" name="" value="500" step="250" min="250" max="2000">
                             <small class="invalid">{{create_invalid}}</small>
                             <input class="btn btn-dark" v-on:click="createRoom($event)" type="submit" value="Create Room">
@@ -76,7 +76,7 @@
                             <label>Max Sets</label><span>{{atRoom.maxSets}}</span>
                         </div>
                         <div class="col">
-                            <label>Max Score</label><span>&plusmn{{atRoom.maxScore}}</span>
+                            <label>Max Score</label><span>&plusmn;{{atRoom.maxScore}}</span>
                             <label>Time Limit</label><span>{{atRoom.time}} seconds</span>
                         </div>
                     </div>

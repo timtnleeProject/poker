@@ -1,7 +1,7 @@
 var socket = io('/lobby');
 
 socket.on('message', function(mes) {
-    console.log(`lobby: ${mes}`)
+    console.log('lobby: '+mes)
 })
 socket.on('init room', function(rs, user) {
     app.rooms = rs;
@@ -270,7 +270,7 @@ var app = new Vue({
         members_game: function() {
             let point;
             let ary = this.Game.players;
-            ary.forEach((p, i) => {
+            ary.forEach(function(p, i){
                 if (p.id === this.userId)
                     point = i;
             })
@@ -280,8 +280,8 @@ var app = new Vue({
         },
         roundPlayed_game: function() {
             let point;
-            this.members_game.forEach((m, i) => {
-                this.Game.roundPlayed.forEach((played) => {
+            this.members_game.forEach(function(m, i){
+                this.Game.roundPlayed.forEach(function(played){
                     if (m.index === played.player.index)
                         played.index = i;
                 })
