@@ -270,8 +270,9 @@ var app = new Vue({
         members_game: function() {
             let point;
             let ary = this.Game.players;
+            let vm = this
             ary.forEach(function(p, i){
-                if (p.id === this.userId)
+                if (p.id === vm.userId)
                     point = i;
             })
             let f = ary.slice(0, point)
@@ -280,8 +281,9 @@ var app = new Vue({
         },
         roundPlayed_game: function() {
             let point;
+            let vm = this
             this.members_game.forEach(function(m, i){
-                this.Game.roundPlayed.forEach(function(played){
+                vm.Game.roundPlayed.forEach(function(played){
                     if (m.index === played.player.index)
                         played.index = i;
                 })
